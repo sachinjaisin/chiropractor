@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import type { IncomingMessage, ServerResponse } from 'http';
 import Fastify, { type FastifyBaseLogger } from 'fastify';
 import cors from '@fastify/cors';
 import cookie from '@fastify/cookie';
@@ -176,6 +177,16 @@ async function start() {
   }
 }
 
-start();
+const isVercelRuntime = Boolean(process.env['VERCEL']);
+
+export default async function handler(req: IncomingMessage, res: ServerResponse) {
+  const server = await buildServer();
+  await server.ready();
+  server.server.emit('request', req, res);
+}
+
+if (!isVercelRuntime) {
+  start();
+}
 
 export { buildServer };
