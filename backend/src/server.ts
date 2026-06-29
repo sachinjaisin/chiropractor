@@ -48,7 +48,12 @@ async function buildServer() {
   // ── Plugins ───────────────────────────────────────────────────────────────
   await fastify.register(cors, {
     origin: env.NODE_ENV === 'production'
-      ? ['https://app.chiroreferral.com', 'https://chiroreferral.com']
+      ? [
+          'https://app.chiroreferral.com',
+          'https://chiroreferral.com',
+          'https://chiropractor-sage.vercel.app',
+          /\.vercel\.app$/, // Allow Vercel preview deployments
+        ]
       : true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

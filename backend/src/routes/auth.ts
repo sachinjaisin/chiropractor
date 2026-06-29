@@ -103,7 +103,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
     reply.setCookie('refresh_token', result.refresh_token, {
       httpOnly: true,
       secure:   env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: env.COOKIE_SAME_SITE,
       path:     '/v1/auth/refresh',
       maxAge:   env.JWT_REFRESH_EXPIRES_IN,
     });
@@ -148,7 +148,7 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
     reply.setCookie('refresh_token', result.refresh_token, {
       httpOnly: true,
       secure:   env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: env.COOKIE_SAME_SITE,
       path:     '/v1/auth/refresh',
       maxAge:   env.JWT_REFRESH_EXPIRES_IN,
     });
@@ -185,7 +185,12 @@ const authRoutes: FastifyPluginAsync = async (fastify) => {
     }
 
     // Always clear the cookie — this is the critical step
-    reply.clearCookie('refresh_token', { path: '/v1/auth/refresh' });
+    reply.clearCookie('refresh_token', {
+      path:     '/v1/auth/refresh',
+      httpOnly: true,
+      secure:   env.NODE_ENV === 'production',
+      sameSite: env.COOKIE_SAME_SITE,
+    });
     return reply.status(204).send();
   });
 

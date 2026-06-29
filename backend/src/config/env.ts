@@ -20,6 +20,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(1).default('dev-secret-change-in-production-min-32-chars'),
   JWT_ACCESS_EXPIRES_IN: z.coerce.number().default(900),
   JWT_REFRESH_EXPIRES_IN: z.coerce.number().default(604800),
+  COOKIE_SAME_SITE: z.enum(['strict', 'lax', 'none']).default('lax'),
 
   // AWS / S3
   AWS_REGION: z.string().default('us-east-1'),
