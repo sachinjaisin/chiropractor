@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ChiroReferral Network — API & Schema Documentation</title>
+<style>
+  :root {
+    --blue:    #2563eb;
+    --blue-lt: #eff6ff;
+    --blue-dk: #1d4ed8;
+    --green:   #16a34a;
+    --green-lt:#f0fdf4;
+    --amber:   #d97706;
+    --amber-lt:#fffbeb;
+    --red:     #dc2626;
+    --red-lt:  #fef2f2;
+    --purple:  #7c3aed;
+    --gray-50: #f9fafb;
+    --gray-100:#f3f4f6;
+    --gray-200:#e5e7eb;
+    --gray-400:#9ca3af;
+    --gray-600:#4b5563;
+    --gray-700:#374151;
+    --gray-800:#1f2937;
+    --gray-900:#111827;
+    --radius:  8px;
+    --shadow:  0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+    --shadow-md:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--gray-800);
+    background: var(--gray-50);
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--gray-900);
+    color: #e5e7eb;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 0 0 24px;
+    flex-shrink: 0;
+  }
+  .sidebar-logo {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    margin-bottom: 8px;
+  }
+  .sidebar-logo h1 { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.2; }
+  .sidebar-logo p  { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+  .sidebar-section { padding: 8px 0; }
+  .sidebar-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    padding: 6px 20px 4px;
+  }
+  .sidebar a {
+    display: block;
+    padding: 5px 20px;
+    font-size: 13px;
+    color: #d1d5db;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: all .15s;
+  }
+  .sidebar a:hover { color: #fff; background: rgba(255,255,255,.06); border-left-color: var(--blue); }
+  .sidebar a.active { color: #fff; background: rgba(37,99,235,.2); border-left-color: var(--blue); }
+
+  /* ── Main ── */
+  .main { flex: 1; overflow-y: auto; padding: 32px 48px; max-width: 960px; }
+
+  /* ── Headings ── */
+  h2 { font-size: 22px; font-weight: 700; color: var(--gray-900); margin: 40px 0 4px; padding-bottom: 10px; border-bottom: 2px solid var(--gray-200); }
+  h2:first-child { margin-top: 0; }
+  h3 { font-size: 16px; font-weight: 600; color: var(--gray-800); margin: 28px 0 10px; }
+  h4 { font-size: 13px; font-weight: 600; color: var(--gray-700); margin: 16px 0 6px; }
+  p  { color: var(--gray-600); margin-bottom: 10px; line-height: 1.7; }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: .03em;
+    font-family: monospace;
+  }
+  .badge-get    { background:#dcfce7; color:#166534; }
+  .badge-post   { background:#dbeafe; color:#1e40af; }
+  .badge-put    { background:#fef3c7; color:#92400e; }
+  .badge-patch  { background:#e0e7ff; color:#3730a3; }
+  .badge-delete { background:#fee2e2; color:#991b1b; }
+
+  /* ── Status pill ── */
+  .pill {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin: 1px 2px;
+  }
+  .pill-blue   { background: var(--blue-lt); color: var(--blue-dk); }
+  .pill-green  { background: var(--green-lt); color: var(--green); }
+  .pill-amber  { background: var(--amber-lt); color: var(--amber); }
+  .pill-red    { background: var(--red-lt); color: var(--red); }
+  .pill-gray   { background: var(--gray-100); color: var(--gray-600); }
+  .pill-purple { background: #ede9fe; color: var(--purple); }
+
+  /* ── Schema table ── */
+  .schema-table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 13px; }
+  .schema-table th {
+    background: var(--gray-100);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--gray-600);
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 2px solid var(--gray-200);
+  }
+  .schema-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--gray-100);
+    vertical-align: top;
+    color: var(--gray-700);
+  }
+  .schema-table tr:last-child td { border-bottom: none; }
+  .schema-table tr:hover td { background: var(--gray-50); }
+  .field-name { font-family: 'Courier New', monospace; font-size: 12px; color: var(--gray-900); font-weight: 600; }
+  .field-type { font-family: 'Courier New', monospace; font-size: 11px; color: var(--purple); }
+  .required-dot { color: var(--red); font-weight: 700; margin-left: 3px; }
+  .nullable-tag { font-size: 10px; color: var(--gray-400); margin-left: 4px; }
+
+  /* ── Endpoint card ── */
+  .endpoint {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: var(--shadow);
+  }
+  .endpoint-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    background: #fff;
+  }
+  .endpoint-header:hover { background: var(--gray-50); }
+  .endpoint-path {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-900);
+    flex: 1;
+  }
+  .endpoint-summary { font-size: 12px; color: var(--gray-500); }
+  .endpoint-body {
+    border-top: 1px solid var(--gray-200);
+    padding: 16px;
+    display: none;
+    background: var(--gray-50);
+  }
+  .endpoint-body.open { display: block; }
+  .endpoint-chevron { color: var(--gray-400); transition: transform .2s; font-size: 12px; }
+  .endpoint-chevron.open { transform: rotate(90deg); }
+
+  /* ── Code block ── */
+  pre {
+    background: var(--gray-900);
+    color: #e5e7eb;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 8px 0;
+    white-space: pre;
+  }
+  code {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    background: var(--gray-100);
+    color: var(--purple);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* ── Info boxes ── */
+  .callout {
+    display: flex;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    margin: 12px 0;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .callout-blue  { background: var(--blue-lt);  border-left: 4px solid var(--blue);  color: var(--blue-dk); }
+  .callout-green { background: var(--green-lt); border-left: 4px solid var(--green); color: #166534; }
+  .callout-amber { background: var(--amber-lt); border-left: 4px solid var(--amber); color: #92400e; }
+  .callout-red   { background: var(--red-lt);   border-left: 4px solid var(--red);   color: #991b1b; }
+  .callout-icon  { font-size: 16px; flex-shrink: 0; }
+
+  /* ── Auth badge ── */
+  .auth-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: #fef3c7;
+    color: #92400e;
+    font-weight: 600;
+    margin-left: 8px;
+  }
+
+  /* ── Rate limit tag ── */
+  .rate-tag {
+    font-size: 11px;
+    color: var(--gray-400);
+    background: var(--gray-100);
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+
+  /* ── Section divider ── */
+  .divider { border: none; border-top: 1px solid var(--gray-200); margin: 24px 0; }
+
+  /* ── Status flow ── */
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 10px 0;
+  }
+  .flow-arrow { color: var(--gray-400); font-size: 14px; }
+
+  /* ── Grid layout ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* ── Card ── */
+  .card {
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+  .card h4 { margin-top: 0; }
+
+  /* ── Scroll target offset ── */
+  [id] { scroll-margin-top: 20px; }
+
+  /* ── Print ── */
+  @media print {
+    .sidebar { display: none; }
+    .main { max-width: 100%; padding: 20px; }
+    .endpoint-body { display: block !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════ SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h1>ChiroReferral Network</h1>
+    <p>API &amp; Schema Reference v1.0</p>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Overview</div>
+    <a href="#overview">Introduction</a>
+    <a href="#auth-flow">Authentication Flow</a>
+    <a href="#pagination">Pagination</a>
+    <a href="#errors">Error Handling</a>
+    <a href="#rate-limits">Rate Limits</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Data Schemas</div>
+    <a href="#schema-user">User</a>
+    <a href="#schema-practitioner">Practitioner</a>
+    <a href="#schema-profile">Practitioner Profile</a>
+    <a href="#schema-document">Document</a>
+    <a href="#schema-referral">Referral</a>
+    <a href="#schema-patient">Patient PII</a>
+    <a href="#schema-wallet">Token Wallet</a>
+    <a href="#schema-transaction">Transaction</a>
+    <a href="#schema-plan">Subscription Plan</a>
+    <a href="#schema-subscription">Subscription</a>
+    <a href="#schema-feedback">Feedback</a>
+    <a href="#schema-quality">Quality Score</a>
+    <a href="#schema-notification">Notification</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Status Enums</div>
+    <a href="#enum-practitioner">Practitioner Status</a>
+    <a href="#enum-referral">Referral Status</a>
+    <a href="#enum-subscription">Subscription Status</a>
+    <a href="#enum-transaction">Transaction Type</a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">API Endpoints</div>
+    <a href="#api-public">Public (no auth)</a>
+    <a href="#api-auth">Authentication</a>
+    <a href="#api-practitioners">Practitioners</a>
+    <a href="#api-referrals">Referrals</a>
+    <a href="#api-wallet">Wallet &amp; Tokens</a>
+    <a href="#api-subscriptions">Subscriptions</a>
+    <a href="#api-feedback">Feedback</a>
+    <a href="#api-admin">Admin</a>
+    <a href="#api-sse">Live Feed (SSE)</a>
+    <a href="#api-webhooks">Webhooks</a>
+    <a href="#api-ops">Health &amp; Metrics</a>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════════ MAIN -->
+<main class="main">
+
+<!-- ─── OVERVIEW ──────────────────────────────────────────────────────────── -->
+<h2 id="overview">Introduction</h2>
+
+<p>
+  The <strong>ChiroReferral Network API</strong> is a referral marketplace connecting patients seeking
+  chiropractic care with practitioners within the network. This document is the complete reference for
+  all data schemas, status enums, and API endpoints.
+</p>
+
+<div class="grid-2">
+  <div class="card">
+    <h4>Base URL</h4>
+    <pre>https://api.chiroreferral.com/v1</pre>
+    <p style="margin:6px 0 0;font-size:12px;color:var(--gray-500)">All endpoints are prefixed with <code>/v1</code></p>
+  </div>
+  <div class="card">
+    <h4>Interactive Docs</h4>
+    <pre>http://localhost:3000/docs</pre>
+    <p style="margin:6px 0 0;font-size:12px;color:var(--gray-500)">Swagger UI available in development</p>
+  </div>
+</div>
+
+<h3>Core Business Flow</h3>
+<div class="flow">
+  <span class="pill pill-gray">Patient submits referral</span><span class="flow-arrow">→</span>
+  <span class="pill pill-blue">Matching engine runs</span><span class="flow-arrow">→</span>
+  <span class="pill pill-blue">Practitioners see feed</span><span class="flow-arrow">→</span>
+  <span class="pill pill-green">First claim wins</span><span class="flow-arrow">→</span>
+  <span class="pill pill-green">Token deducted</span><span class="flow-arrow">→</span>
+  <span class="pill pill-green">PII unlocked</span><span class="flow-arrow">→</span>
+  <span class="pill pill-purple">Treatment</span><span class="flow-arrow">→</span>
+  <span class="pill pill-amber">Feedback</span>
+</div>
+
+<div class="callout callout-blue">
+  <span class="callout-icon">ℹ️</span>
+  <div>Patient contact details (name, phone, email, address) are <strong>hidden from all practitioners</strong> until the referral is claimed. Only the claiming practitioner gains access.</div>
+</div>
+
+<hr class="divider" />
+
+<!-- ─── AUTH FLOW ──────────────────────────────────────────────────────────── -->
+<h2 id="auth-flow">Authentication Flow</h2>
+
+<p>The API uses <strong>RS256 JWT</strong> access tokens (15 min TTL) with <strong>HttpOnly cookie</strong> refresh tokens (7 day TTL).</p>
+
+<div class="grid-2">
+  <div class="card">
+    <h4>Access Token</h4>
+    <p>Include in every authenticated request:</p>
+    <pre>Authorization: Bearer &lt;access_token&gt;</pre>
+    <p style="margin-top:8px;font-size:12px;color:var(--gray-500)">Expires in 900 seconds (15 min)</p>
+  </div>
+  <div class="card">
+    <h4>Refresh Token</h4>
+    <p>Stored automatically as HttpOnly cookie. Exchange it at:</p>
+    <pre>POST /v1/auth/refresh</pre>
+    <p style="margin-top:8px;font-size:12px;color:var(--gray-500)">Rotated on every use. Reuse detection invalidates all tokens.</p>
+  </div>
+</div>
+
+<h4>JWT Payload</h4>
+<table class="schema-table">
+  <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td class="field-name">sub</td><td class="field-type">uuid</td><td>User ID</td></tr>
+    <tr><td class="field-name">role</td><td class="field-type">string</td><td><code>chiropractor</code> or <code>admin</code></td></tr>
+    <tr><td class="field-name">practitioner_id</td><td class="field-type">uuid</td><td>Practitioner record ID (null for admins)</td></tr>
+    <tr><td class="field-name">practitioner_status</td><td class="field-type">string</td><td>Current practitioner status enum</td></tr>
+    <tr><td class="field-name">jti</td><td class="field-type">uuid</td><td>Unique token ID — used for revocation on logout</td></tr>
+    <tr><td class="field-name">exp</td><td class="field-type">unix</td><td>Expiry timestamp</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-amber">
+  <span class="callout-icon">⚠️</span>
+  <div>Practitioners with status other than <strong>ACTIVE</strong> cannot access referral endpoints. Check <code>practitioner_status</code> in the JWT and prompt the user to complete onboarding.</div>
+</div>
+
+<hr class="divider" />
+
+<!-- ─── PAGINATION ──────────────────────────────────────────────────────────── -->
+<h2 id="pagination">Pagination</h2>
+
+<p>All list endpoints use <strong>cursor-based pagination</strong>. Cursors are stable under concurrent inserts — no page drift.</p>
+
+<div class="grid-2">
+  <div class="card">
+    <h4>Request</h4>
+    <pre>GET /v1/referrals/available?limit=20&cursor=eyJpZCI6Ii4uLiJ9</pre>
+  </div>
+  <div class="card">
+    <h4>Response Shape</h4>
+    <pre>{
+  "data": [...],
+  "pagination": {
+    "cursor": "eyJpZ...",  // null on last page
+    "has_next": true,
+    "limit": 20
+  }
+}</pre>
+  </div>
+</div>
+
+<p>Pass the returned <code>cursor</code> as a query parameter in the next request. When <code>has_next</code> is <code>false</code>, you have reached the last page.</p>
+
+<hr class="divider" />
+
+<!-- ─── ERRORS ──────────────────────────────────────────────────────────── -->
+<h2 id="errors">Error Handling</h2>
+
+<p>All errors return a consistent JSON body:</p>
+<pre>{
+  "code":    "NOT_FOUND",          // machine-readable error code
+  "message": "Referral not found", // human-readable message
+  "details": { ... }               // optional: validation field errors
+}</pre>
+
+<table class="schema-table">
+  <thead><tr><th>HTTP Status</th><th>Code</th><th>When</th></tr></thead>
+  <tbody>
+    <tr><td>400</td><td class="field-type">BAD_REQUEST</td><td>Missing required header or malformed input</td></tr>
+    <tr><td>401</td><td class="field-type">UNAUTHORIZED</td><td>Missing, invalid, or expired JWT</td></tr>
+    <tr><td>402</td><td class="field-type">PAYMENT_REQUIRED</td><td>Insufficient token balance or no active subscription</td></tr>
+    <tr><td>403</td><td class="field-type">FORBIDDEN</td><td>Authenticated but not permitted (wrong role or inactive status)</td></tr>
+    <tr><td>404</td><td class="field-type">NOT_FOUND</td><td>Resource does not exist or not accessible to this user</td></tr>
+    <tr><td>409</td><td class="field-type">CONFLICT</td><td>Duplicate resource, already claimed, or invalid state transition</td></tr>
+    <tr><td>422</td><td class="field-type">VALIDATION_ERROR</td><td>Request body / query param failed schema validation</td></tr>
+    <tr><td>423</td><td class="field-type">LOCKED</td><td>Referral claim lock contention — retry after ~1 second</td></tr>
+    <tr><td>429</td><td class="field-type">RATE_LIMITED</td><td>Too many requests — see rate limit headers</td></tr>
+    <tr><td>500</td><td class="field-type">INTERNAL_ERROR</td><td>Unexpected server error</td></tr>
+    <tr><td>503</td><td class="field-type">SERVICE_UNAVAILABLE</td><td>Database or Redis dependency down (readiness probe)</td></tr>
+  </tbody>
+</table>
+
+<hr class="divider" />
+
+<!-- ─── RATE LIMITS ──────────────────────────────────────────────────────────── -->
+<h2 id="rate-limits">Rate Limits</h2>
+
+<table class="schema-table">
+  <thead><tr><th>Endpoint Group</th><th>Limit</th><th>Window</th></tr></thead>
+  <tbody>
+    <tr><td>Public referral intake</td><td>5 requests</td><td>10 minutes / IP</td></tr>
+    <tr><td>Auth (login, forgot-password)</td><td>10 requests</td><td>15 minutes / IP</td></tr>
+    <tr><td>All authenticated endpoints</td><td>300 requests</td><td>1 minute / user</td></tr>
+    <tr><td><code>POST .../claim</code></td><td>3 requests</td><td>1 minute / user</td></tr>
+    <tr><td><code>POST /wallet/purchase</code></td><td>5 requests</td><td>1 minute / user</td></tr>
+    <tr><td>Admin endpoints</td><td>1000 requests</td><td>1 minute / user</td></tr>
+  </tbody>
+</table>
+
+<hr class="divider" />
+
+<!-- ══════════════════════════════════════════════════════════════ SCHEMAS -->
+<h2 id="schemas">Data Schemas</h2>
+
+<!-- USER -->
+<h3 id="schema-user">User</h3>
+<p>Base account. Every practitioner has one user record. Admins are also users.</p>
+<table class="schema-table">
+  <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td class="field-name">id</td><td class="field-type">uuid</td><td>✓</td><td>Unique identifier</td></tr>
+    <tr><td class="field-name">email</td><td class="field-type">string (email)</td><td>✓</td><td>Login email — unique, case-insensitive</td></tr>
+    <tr><td class="field-name">first_name</td><td class="field-type">string</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">last_name</td><td class="field-type">string</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">phone</td><td class="field-type">string</td><td></td><td>Contact phone number</td></tr>
+    <tr><td class="field-name">role</td><td class="field-type">enum</td><td>✓</td><td><code>chiropractor</code> | <code>admin</code></td></tr>
+    <tr><td class="field-name">is_active</td><td class="field-type">boolean</td><td>✓</td><td>False = disabled by admin</td></tr>
+    <tr><td class="field-name">email_verified</td><td class="field-type">boolean</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">last_login_at</td><td class="field-type">datetime<span class="nullable-tag">nullable</span></td><td></td><td></td></tr>
+    <tr><td class="field-name">created_at</td><td class="field-type">datetime</td><td>✓</td><td></td></tr>
+  </tbody>
+</table>
+
+<!-- PRACTITIONER -->
+<h3 id="schema-practitioner">Practitioner</h3>
+<p>Extends User. One practitioner record per chiropractor user.</p>
+<table class="schema-table">
+  <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td class="field-name">id</td><td class="field-type">uuid</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">user_id</td><td class="field-type">uuid</td><td>✓</td><td>FK → users.id</td></tr>
+    <tr><td class="field-name">status</td><td class="field-type">enum</td><td>✓</td><td>See <a href="#enum-practitioner">Practitioner Status</a></td></tr>
+    <tr><td class="field-name">quality_score</td><td class="field-type">number (0–100)</td><td>✓</td><td>Composite score from matching engine weighting</td></tr>
+    <tr><td class="field-name">warning_count</td><td class="field-type">integer</td><td>✓</td><td>Admin-issued warning count</td></tr>
+    <tr><td class="field-name">suspended_at</td><td class="field-type">datetime<span class="nullable-tag">nullable</span></td><td></td><td></td></tr>
+    <tr><td class="field-name">suspension_note</td><td class="field-type">string<span class="nullable-tag">nullable</span></td><td></td><td>Admin's reason for suspension</td></tr>
+    <tr><td class="field-name">created_at</td><td class="field-type">datetime</td><td>✓</td><td></td></tr>
+  </tbody>
+</table>
+
+<!-- PRACTITIONER PROFILE -->
+<h3 id="schema-profile">Practitioner Profile</h3>
+<p>Practice information, service area, and specialties. Created by the practitioner during onboarding.</p>
+<table class="schema-table">
+  <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td class="field-name">id</td><td class="field-type">uuid</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">practitioner_id</td><td class="field-type">uuid</td><td>✓</td><td>FK → practitioners.id</td></tr>
+    <tr><td class="field-name">practice_name</td><td class="field-type">string</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">practice_phone</td><td class="field-type">string<span class="nullable-tag">nullable</span></td><td></td><td></td></tr>
+    <tr><td class="field-name">practice_email</td><td class="field-type">email<span class="nullable-tag">nullable</span></td><td></td><td></td></tr>
+    <tr><td class="field-name">website</td><td class="field-type">url<span class="nullable-tag">nullable</span></td><td></td><td></td></tr>
+    <tr><td class="field-name">street_address</td><td class="field-type">string</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">city</td><td class="field-type">string</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">state</td><td class="field-type">string (2-char)</td><td>✓</td><td>US state abbreviation e.g. <code>CA</code></td></tr>
+    <tr><td class="field-name">zip_code</td><td class="field-type">string</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">bio</td><td class="field-type">string<span class="nullable-tag">nullable</span></td><td></td><td>Max 2000 chars</td></tr>
+    <tr><td class="field-name">years_experience</td><td class="field-type">integer<span class="nullable-tag">nullable</span></td><td></td><td>Min 0, max 60</td></tr>
+    <tr><td class="field-name">languages_spoken</td><td class="field-type">string[]</td><td>✓</td><td>e.g. <code>["English","Spanish"]</code></td></tr>
+    <tr><td class="field-name">service_radius_km</td><td class="field-type">number</td><td>✓</td><td>Radius around practice for referral matching. Default 40km.</td></tr>
+    <tr><td class="field-name">areas_served</td><td class="field-type">string[]</td><td>✓</td><td>Named areas / neighborhoods</td></tr>
+    <tr><td class="field-name">specialties</td><td class="field-type">string[]</td><td>✓</td><td>See specialty values below</td></tr>
+    <tr><td class="field-name">updated_at</td><td class="field-type">datetime</td><td>✓</td><td></td></tr>
+  </tbody>
+</table>
+<h4>Specialty Values</h4>
+<div>
+  <span class="pill pill-blue">Back Pain</span>
+  <span class="pill pill-blue">Neck Pain</span>
+  <span class="pill pill-blue">Sports Injury</span>
+  <span class="pill pill-blue">Pregnancy</span>
+  <span class="pill pill-blue">Pediatrics</span>
+  <span class="pill pill-blue">Rehabilitation</span>
+  <span class="pill pill-blue">Wellness Care</span>
+  <span class="pill pill-gray">Other</span>
+</div>
+
+<!-- DOCUMENT -->
+<h3 id="schema-document">Practitioner Document</h3>
+<p>Verification credentials uploaded during onboarding. Stored encrypted in S3.</p>
+<table class="schema-table">
+  <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td class="field-name">id</td><td class="field-type">uuid</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">practitioner_id</td><td class="field-type">uuid</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">document_type</td><td class="field-type">enum</td><td>✓</td><td><code>LICENSE</code> | <code>INSURANCE</code> | <code>CERTIFICATION</code> | <code>TRAINING</code> | <code>SUPPORTING</code></td></tr>
+    <tr><td class="field-name">original_filename</td><td class="field-type">string</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">mime_type</td><td class="field-type">string</td><td>✓</td><td>Allowed: <code>application/pdf</code>, <code>image/jpeg</code>, <code>image/png</code>, <code>image/webp</code></td></tr>
+    <tr><td class="field-name">file_size_bytes</td><td class="field-type">integer</td><td>✓</td><td>Max 10,485,760 bytes (10 MB)</td></tr>
+    <tr><td class="field-name">verified_at</td><td class="field-type">datetime<span class="nullable-tag">nullable</span></td><td></td><td>Set by admin on approval</td></tr>
+    <tr><td class="field-name">expires_at</td><td class="field-type">date<span class="nullable-tag">nullable</span></td><td></td><td>License/insurance expiry</td></tr>
+    <tr><td class="field-name">created_at</td><td class="field-type">datetime</td><td>✓</td><td></td></tr>
+  </tbody>
+</table>
+
+<!-- REFERRAL -->
+<h3 id="schema-referral">Referral</h3>
+<p>A patient's care request. Two views exist: <strong>Marketplace view</strong> (no PII) shown to practitioners before claiming, and <strong>Claimed view</strong> (full PII) shown after claim.</p>
+
+<h4>Marketplace View (no PII)</h4>
+<table class="schema-table">
+  <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td class="field-name">id</td><td class="field-type">uuid</td><td></td></tr>
+    <tr><td class="field-name">referral_number</td><td class="field-type">string</td><td>Human-readable e.g. <code>REF-202506-100001</code></td></tr>
+    <tr><td class="field-name">status</td><td class="field-type">enum</td><td>See <a href="#enum-referral">Referral Status</a></td></tr>
+    <tr><td class="field-name">primary_complaint</td><td class="field-type">string</td><td>Reason for seeking care</td></tr>
+    <tr><td class="field-name">symptoms</td><td class="field-type">string<span class="nullable-tag">nullable</span></td><td></td></tr>
+    <tr><td class="field-name">duration_of_problem</td><td class="field-type">string<span class="nullable-tag">nullable</span></td><td>e.g. "2 weeks"</td></tr>
+    <tr><td class="field-name">urgency_level</td><td class="field-type">enum</td><td><code>LOW</code> | <code>NORMAL</code> | <code>HIGH</code> | <code>URGENT</code></td></tr>
+    <tr><td class="field-name">preferred_contact</td><td class="field-type">enum<span class="nullable-tag">nullable</span></td><td><code>phone</code> | <code>email</code> | <code>either</code></td></tr>
+    <tr><td class="field-name">additional_notes</td><td class="field-type">string<span class="nullable-tag">nullable</span></td><td></td></tr>
+    <tr><td class="field-name">city</td><td class="field-type">string</td><td>Patient city (not full address)</td></tr>
+    <tr><td class="field-name">state</td><td class="field-type">string</td><td></td></tr>
+    <tr><td class="field-name">zip_code</td><td class="field-type">string</td><td>Zip only — no street</td></tr>
+    <tr><td class="field-name">distance_km</td><td class="field-type">number<span class="nullable-tag">nullable</span></td><td>Distance from practitioner's practice location</td></tr>
+    <tr><td class="field-name">priority_score</td><td class="field-type">number</td><td>Matching engine score — higher = shown sooner</td></tr>
+    <tr><td class="field-name">published_at</td><td class="field-type">datetime<span class="nullable-tag">nullable</span></td><td></td></tr>
+    <tr><td class="field-name">expires_at</td><td class="field-type">datetime<span class="nullable-tag">nullable</span></td><td>Unclaimed referrals expire (configurable, default 72h)</td></tr>
+    <tr><td class="field-name">viewed_at</td><td class="field-type">datetime<span class="nullable-tag">nullable</span></td><td>When this practitioner first opened the detail view</td></tr>
+    <tr><td class="field-name">created_at</td><td class="field-type">datetime</td><td></td></tr>
+  </tbody>
+</table>
+
+<!-- PATIENT PII -->
+<h3 id="schema-patient">Patient PII <span class="auth-tag">🔒 After claim only</span></h3>
+<p>Patient contact details are returned inside the claimed referral response. They are <strong>never</strong> present in marketplace listing or detail endpoints.</p>
+<table class="schema-table">
+  <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td class="field-name">first_name</td><td class="field-type">string</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">last_name</td><td class="field-type">string</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">phone</td><td class="field-type">string</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">email</td><td class="field-type">email<span class="nullable-tag">nullable</span></td><td></td><td></td></tr>
+    <tr><td class="field-name">street_address</td><td class="field-type">string</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">city</td><td class="field-type">string</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">state</td><td class="field-type">string</td><td>✓</td><td></td></tr>
+    <tr><td class="field-name">zip_code</td><td class="field-type">string</td><td>✓</td><td></td></tr>
+  </tbody>
+</table>
+
+<!-- TOKEN WALLET -->
+<h3 id="schema-wallet">Token Wallet</h3>
+<p>Each practitioner has exactly one wallet. Tokens are consumed to claim referrals (1 token per claim).</p>
+<table class="schema-table">
+  <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td class="field-name">id</td><td class="field-type">uuid</td><td></td></tr>
+    <tr><td class="field-name">balance</td><td class="field-type">integer ≥ 0</td><td>Spendable balance. Must be ≥ 1 to claim a referral.</td></tr>
+    <tr><td class="field-name">total_purchased</td><td class="field-type">integer</td><td>Lifetime tokens bought</td></tr>
+    <tr><td class="field-name">total_allocated</td><td class="field-type">integer</td><td>Tokens received via monthly subscription renewals</td></tr>
+    <tr><td class="field-name">total_used</td><td class="field-type">integer</td><td>Tokens spent on referral claims</td></tr>
+    <tr><td class="field-name">total_expired</td><td class="field-type">integer</td><td>Tokens that expired (if expiry is configured)</td></tr>
+    <tr><td class="field-name">updated_at</td><td class="field-type">datetime</td><td></td></tr>
+  </tbody>
+</table>
+
+<!-- TOKEN TRANSACTION -->
+<h3 id="schema-transaction">Token Transaction</h3>
+<p>Immutable ledger entry. Positive amount = credit. Negative amount = debit.</p>
+<table class="schema-table">
+  <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td class="field-name">id</td><td class="field-type">uuid</td><td></td></tr>
+    <tr><td class="field-name">transaction_type</td><td class="field-type">enum</td><td>See <a href="#enum-transaction">Transaction Types</a></td></tr>
+    <tr><td class="field-name">amount</td><td class="field-type">integer</td><td>+N = credit, -1 = referral claim debit</td></tr>
+    <tr><td class="field-name">balance_after</td><td class="field-type">integer ≥ 0</td><td>Wallet balance immediately after this transaction</td></tr>
+    <tr><td class="field-name">referral_id</td><td class="field-type">uuid<span class="nullable-tag">nullable</span></td><td>Set for REFERRAL_CLAIM transactions</td></tr>
+    <tr><td class="field-name">notes</td><td class="field-type">string<span class="nullable-tag">nullable</span></td><td></td></tr>
+    <tr><td class="field-name">created_at</td><td class="field-type">datetime</td><td>Immutable — no updated_at</td></tr>
+  </tbody>
+</table>
+
+<!-- SUBSCRIPTION PLAN -->
+<h3 id="schema-plan">Subscription Plan</h3>
+<table class="schema-table">
+  <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td class="field-name">id</td><td class="field-type">uuid</td><td></td></tr>
+    <tr><td class="field-name">name</td><td class="field-type">string</td><td>e.g. <code>Starter</code>, <code>Professional</code>, <code>Enterprise</code></td></tr>
+    <tr><td class="field-name">description</td><td class="field-type">string<span class="nullable-tag">nullable</span></td><td></td></tr>
+    <tr><td class="field-name">monthly_price_cents</td><td class="field-type">integer</td><td>Price in <strong>USD cents</strong> (e.g. 9900 = $99.00)</td></tr>
+    <tr><td class="field-name">included_tokens</td><td class="field-type">integer</td><td>Tokens allocated on each successful billing cycle renewal</td></tr>
+    <tr><td class="field-name">sort_order</td><td class="field-type">integer</td><td>Display order (ascending)</td></tr>
+  </tbody>
+</table>
+
+<!-- SUBSCRIPTION -->
+<h3 id="schema-subscription">Subscription</h3>
+<table class="schema-table">
+  <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td class="field-name">id</td><td class="field-type">uuid</td><td></td></tr>
+    <tr><td class="field-name">status</td><td class="field-type">enum</td><td>See <a href="#enum-subscription">Subscription Status</a></td></tr>
+    <tr><td class="field-name">plan_name</td><td class="field-type">string</td><td></td></tr>
+    <tr><td class="field-name">monthly_price_cents</td><td class="field-type">integer</td><td></td></tr>
+    <tr><td class="field-name">included_tokens</td><td class="field-type">integer</td><td></td></tr>
+    <tr><td class="field-name">current_period_start</td><td class="field-type">datetime</td><td></td></tr>
+    <tr><td class="field-name">current_period_end</td><td class="field-type">datetime</td><td>Access retained until this date even after cancellation</td></tr>
+    <tr><td class="field-name">cancelled_at</td><td class="field-type">datetime<span class="nullable-tag">nullable</span></td><td></td></tr>
+  </tbody>
+</table>
+
+<!-- FEEDBACK -->
+<h3 id="schema-feedback">Patient Feedback</h3>
+<p>One submission per referral. All ratings are 1–5.</p>
+<table class="schema-table">
+  <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td class="field-name">rating_communication</td><td class="field-type">integer 1–5</td><td>How clearly did the practitioner communicate?</td></tr>
+    <tr><td class="field-name">rating_professionalism</td><td class="field-type">integer 1–5</td><td></td></tr>
+    <tr><td class="field-name">rating_service</td><td class="field-type">integer 1–5</td><td>Quality of chiropractic treatment</td></tr>
+    <tr><td class="field-name">rating_overall</td><td class="field-type">integer 1–5</td><td>Overall experience</td></tr>
+    <tr><td class="field-name">comments</td><td class="field-type">string<span class="nullable-tag">nullable</span></td><td>Max 1000 chars</td></tr>
+    <tr><td class="field-name">submitted_at</td><td class="field-type">datetime</td><td></td></tr>
+  </tbody>
+</table>
+
+<!-- QUALITY SCORE -->
+<h3 id="schema-quality">Quality Score</h3>
+<p>Recomputed daily and on each feedback submission. Weights are admin-configurable.</p>
+<table class="schema-table">
+  <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td class="field-name">composite_score</td><td class="field-type">number 0–100</td><td>Weighted score used to rank practitioners in the matching engine</td></tr>
+    <tr><td class="field-name">claim_rate</td><td class="field-type">number 0–1</td><td>Fraction of visible referrals claimed</td></tr>
+    <tr><td class="field-name">completion_rate</td><td class="field-type">number 0–1</td><td>Fraction of claimed referrals completed</td></tr>
+    <tr><td class="field-name">avg_response_time_s</td><td class="field-type">integer<span class="nullable-tag">nullable</span></td><td>Average seconds between referral published and claimed</td></tr>
+    <tr><td class="field-name">avg_patient_rating</td><td class="field-type">number 1–5<span class="nullable-tag">nullable</span></td><td></td></tr>
+    <tr><td class="field-name">score_date</td><td class="field-type">date</td><td></td></tr>
+  </tbody>
+</table>
+
+<!-- NOTIFICATION -->
+<h3 id="schema-notification">Notification</h3>
+<table class="schema-table">
+  <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td class="field-name">id</td><td class="field-type">uuid</td><td></td></tr>
+    <tr><td class="field-name">type</td><td class="field-type">string</td><td>e.g. <code>NEW_REFERRAL_AVAILABLE</code>, <code>REFERRAL_CLAIMED</code>, <code>APPROVAL_APPROVED</code></td></tr>
+    <tr><td class="field-name">title</td><td class="field-type">string</td><td>Short notification title</td></tr>
+    <tr><td class="field-name">body</td><td class="field-type">string</td><td>Full notification text</td></tr>
+    <tr><td class="field-name">is_read</td><td class="field-type">boolean</td><td></td></tr>
+    <tr><td class="field-name">created_at</td><td class="field-type">datetime</td><td></td></tr>
+  </tbody>
+</table>
+
+<hr class="divider" />
+
+<!-- ══════════════════════════════════════════════════════════════ STATUS ENUMS -->
+<h2 id="enums">Status Enums</h2>
+
+<h3 id="enum-practitioner">Practitioner Status</h3>
+<div class="flow" style="margin-bottom:12px">
+  <span class="pill pill-gray">PENDING_PROFILE</span><span class="flow-arrow">→</span>
+  <span class="pill pill-amber">PROFILE_COMPLETED</span><span class="flow-arrow">→</span>
+  <span class="pill pill-amber">PENDING_APPROVAL</span><span class="flow-arrow">→</span>
+  <span class="pill pill-green">ACTIVE</span>
+</div>
+<table class="schema-table">
+  <thead><tr><th>Status</th><th>Description</th><th>Can access referrals?</th></tr></thead>
+  <tbody>
+    <tr><td><span class="pill pill-gray">PENDING_PROFILE</span></td><td>Just registered — profile not yet completed</td><td>No</td></tr>
+    <tr><td><span class="pill pill-amber">PROFILE_COMPLETED</span></td><td>Profile filled in — documents not yet uploaded</td><td>No</td></tr>
+    <tr><td><span class="pill pill-amber">PENDING_APPROVAL</span></td><td>All documents uploaded — awaiting admin review</td><td>No</td></tr>
+    <tr><td><span class="pill pill-green">ACTIVE</span></td><td>Admin approved — fully operational</td><td>✓ Yes</td></tr>
+    <tr><td><span class="pill pill-red">REJECTED</span></td><td>Admin rejected application</td><td>No</td></tr>
+    <tr><td><span class="pill pill-red">SUSPENDED</span></td><td>Admin suspended — retains access to historical claimed referrals only</td><td>No (historical only)</td></tr>
+  </tbody>
+</table>
+
+<h3 id="enum-referral">Referral Status</h3>
+<div class="flow" style="margin-bottom:12px">
+  <span class="pill pill-gray">NEW</span><span class="flow-arrow">→</span>
+  <span class="pill pill-blue">OPEN</span><span class="flow-arrow">→</span>
+  <span class="pill pill-green">CLAIMED</span><span class="flow-arrow">→</span>
+  <span class="pill pill-green">PATIENT_CONTACTED</span><span class="flow-arrow">→</span>
+  <span class="pill pill-green">APPOINTMENT_BOOKED</span><span class="flow-arrow">→</span>
+  <span class="pill pill-green">TREATMENT_IN_PROGRESS</span><span class="flow-arrow">→</span>
+  <span class="pill pill-purple">COMPLETED</span><span class="flow-arrow">→</span>
+  <span class="pill pill-gray">CLOSED</span>
+</div>
+<table class="schema-table">
+  <thead><tr><th>Status</th><th>Description</th><th>Who sets it</th></tr></thead>
+  <tbody>
+    <tr><td><span class="pill pill-gray">NEW</span></td><td>Referral just submitted — geocoding and matching in progress</td><td>System (on intake)</td></tr>
+    <tr><td><span class="pill pill-blue">OPEN</span></td><td>Matching complete — visible in practitioner marketplace feed</td><td>Matching engine</td></tr>
+    <tr><td><span class="pill pill-green">CLAIMED</span></td><td>Claimed by a practitioner — 1 token deducted, PII unlocked</td><td>Practitioner (claim API)</td></tr>
+    <tr><td><span class="pill pill-green">PATIENT_CONTACTED</span></td><td>Practitioner has contacted the patient</td><td>Practitioner (status update)</td></tr>
+    <tr><td><span class="pill pill-green">APPOINTMENT_BOOKED</span></td><td>Appointment scheduled</td><td>Practitioner (status update)</td></tr>
+    <tr><td><span class="pill pill-green">TREATMENT_IN_PROGRESS</span></td><td>Active treatment underway</td><td>Practitioner (status update)</td></tr>
+    <tr><td><span class="pill pill-purple">COMPLETED</span></td><td>Treatment finished — triggers feedback request email to patient</td><td>Practitioner (status update)</td></tr>
+    <tr><td><span class="pill pill-gray">CLOSED</span></td><td>Feedback submitted (or expired/admin-closed)</td><td>System / Admin</td></tr>
+  </tbody>
+</table>
+
+<h3 id="enum-subscription">Subscription Status</h3>
+<table class="schema-table">
+  <thead><tr><th>Status</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><span class="pill pill-green">ACTIVE</span></td><td>Paid and current — practitioner can claim referrals</td></tr>
+    <tr><td><span class="pill pill-amber">PAST_DUE</span></td><td>Payment failed — limited access, retry payment</td></tr>
+    <tr><td><span class="pill pill-gray">CANCELLED</span></td><td>Cancelled — access until <code>current_period_end</code></td></tr>
+    <tr><td><span class="pill pill-red">EXPIRED</span></td><td>Period ended — no access</td></tr>
+    <tr><td><span class="pill pill-gray">NONE</span></td><td>No subscription record exists (API response only)</td></tr>
+  </tbody>
+</table>
+
+<h3 id="enum-transaction">Token Transaction Types</h3>
+<table class="schema-table">
+  <thead><tr><th>Type</th><th>Amount Sign</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><code>PURCHASE</code></td><td class="field-type">+N</td><td>Tokens bought via token package</td></tr>
+    <tr><td><code>MONTHLY_ALLOCATION</code></td><td class="field-type">+N</td><td>Tokens allocated on subscription renewal</td></tr>
+    <tr><td><code>REFERRAL_CLAIM</code></td><td class="field-type">-1</td><td>1 token deducted per successful referral claim</td></tr>
+    <tr><td><code>REFUND</code></td><td class="field-type">+N</td><td>Admin-issued refund</td></tr>
+    <tr><td><code>ADJUSTMENT</code></td><td class="field-type">±N</td><td>Manual admin adjustment</td></tr>
+    <tr><td><code>EXPIRY</code></td><td class="field-type">-N</td><td>Tokens expired (if expiry configured)</td></tr>
+  </tbody>
+</table>
+
+<hr class="divider" />
+
+<!-- ══════════════════════════════════════════════════════════════ ENDPOINTS -->
+<h2 id="endpoints">API Endpoints</h2>
+
+<!-- PUBLIC -->
+<h3 id="api-public">Public <span class="rate-tag">No auth required</span></h3>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-post">POST</span>
+    <span class="endpoint-path">/v1/public/referrals</span>
+    <span class="endpoint-summary">Submit a patient referral request</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>Creates a referral from a patient intake form. Triggers geocoding + matching engine. <strong>No account required.</strong></p>
+    <div class="callout callout-blue"><span class="callout-icon">ℹ️</span><div>Rate limit: 5 requests per 10 minutes per IP. Supply <code>Idempotency-Key</code> header to prevent duplicate submissions on retry.</div></div>
+    <h4>Request Body</h4>
+    <pre>{
+  "first_name":          "John",          // required
+  "last_name":           "Doe",           // required
+  "phone":               "+12025551234",  // required
+  "email":               "john@example.com",
+  "street_address":      "123 Main St",   // required
+  "city":                "Washington",    // required
+  "state":               "DC",            // required, 2-char
+  "zip_code":            "20001",         // required
+  "primary_complaint":   "Lower back pain after a fall", // required
+  "symptoms":            "Sharp pain, limited mobility",
+  "duration_of_problem": "2 weeks",
+  "urgency_level":       "NORMAL",        // LOW | NORMAL | HIGH | URGENT
+  "preferred_contact":   "phone",         // phone | email | either
+  "additional_notes":    "..."
+}</pre>
+    <h4>Response 201</h4>
+    <pre>{
+  "referral_number": "REF-202506-100001"
+}</pre>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-get">GET</span>
+    <span class="endpoint-path">/v1/public/subscription-plans</span>
+    <span class="endpoint-summary">List available plans (for pricing page)</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <pre>{
+  "data": [
+    {
+      "id":                  "uuid",
+      "name":                "Starter",
+      "description":         "Perfect for new practitioners",
+      "monthly_price_cents": 4900,    // $49.00
+      "included_tokens":     5,
+      "sort_order":          1
+    }
+  ]
+}</pre>
+  </div>
+</div>
+
+<!-- AUTH -->
+<h3 id="api-auth">Authentication</h3>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-post">POST</span>
+    <span class="endpoint-path">/v1/auth/register</span>
+    <span class="endpoint-summary">Create a chiropractor account</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <h4>Request Body</h4>
+    <pre>{
+  "first_name": "Jane",          // required
+  "last_name":  "Smith",         // required
+  "email":      "jane@example.com", // required, unique
+  "phone":      "+12025551234",  // required
+  "password":   "mypassword123" // required, min 10 chars
+}</pre>
+    <h4>Response 201</h4>
+    <pre>{
+  "user": {
+    "id":         "uuid",
+    "email":      "jane@example.com",
+    "first_name": "Jane",
+    "last_name":  "Smith",
+    "role":       "chiropractor",
+    "created_at": "2025-06-01T10:00:00Z"
+  }
+}</pre>
+    <div class="callout callout-amber"><span class="callout-icon">⚠️</span><div>After registration, practitioner status is <code>PENDING_PROFILE</code>. Guide the user to complete their profile before they can access referrals.</div></div>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-post">POST</span>
+    <span class="endpoint-path">/v1/auth/login</span>
+    <span class="endpoint-summary">Authenticate and get tokens</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <h4>Request Body</h4>
+    <pre>{ "email": "jane@example.com", "password": "mypassword123" }</pre>
+    <h4>Response 200</h4>
+    <pre>{
+  "access_token": "eyJhbGci...",
+  "token_type":   "bearer",
+  "expires_in":   900
+}
+// + Set-Cookie: refresh_token=...; HttpOnly; Secure; SameSite=Strict; Path=/v1/auth/refresh</pre>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-post">POST</span>
+    <span class="endpoint-path">/v1/auth/refresh</span>
+    <span class="endpoint-summary">Exchange refresh token for new access token</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>No request body. Reads the HttpOnly <code>refresh_token</code> cookie automatically. Rotates refresh token on use.</p>
+    <pre>// Response 200
+{ "access_token": "eyJhbGci...", "expires_in": 900 }</pre>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-post">POST</span>
+    <span class="endpoint-path">/v1/auth/logout</span>
+    <span class="endpoint-summary">Revoke current token <span class="auth-tag">🔐 Auth</span></span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>Revokes the access token JTI and clears the refresh token cookie. Returns 204.</p>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-post">POST</span>
+    <span class="endpoint-path">/v1/auth/forgot-password</span>
+    <span class="endpoint-summary">Send password reset email</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>Always returns 204 (prevents email enumeration). Reset link expires in 1 hour.</p>
+    <pre>{ "email": "jane@example.com" }</pre>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-post">POST</span>
+    <span class="endpoint-path">/v1/auth/reset-password</span>
+    <span class="endpoint-summary">Reset password with email token</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <pre>{ "token": "...", "new_password": "mynewpassword123" }</pre>
+  </div>
+</div>
+
+<!-- PRACTITIONERS -->
+<h3 id="api-practitioners">Practitioners <span class="auth-tag">🔐 Auth required</span></h3>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-get">GET</span>
+    <span class="endpoint-path">/v1/practitioners/me/profile</span>
+    <span class="endpoint-summary">Get own profile</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>Returns the combined user + practitioner + profile data for the authenticated user.</p>
+    <pre>{
+  "practitioner_id":   "uuid",
+  "status":            "ACTIVE",
+  "practice_name":     "Smith Chiropractic",
+  "city":              "Washington",
+  "state":             "DC",
+  "service_radius_km": 40,
+  "specialties":       ["Back Pain", "Sports Injury"],
+  "quality_score":     82.5,
+  ...
+}</pre>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-put">PUT</span>
+    <span class="endpoint-path">/v1/practitioners/me/profile</span>
+    <span class="endpoint-summary">Update profile</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>All fields are optional — send only what changed. Changing address fields triggers background geocoding (async).</p>
+    <pre>{
+  "practice_name":     "Smith Chiropractic",
+  "service_radius_km": 50,
+  "specialties":       ["Back Pain", "Neck Pain"],
+  "bio":               "15 years of experience..."
+}</pre>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-post">POST</span>
+    <span class="endpoint-path">/v1/practitioners/me/documents</span>
+    <span class="endpoint-summary">Upload verification document</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>Multipart/form-data upload. Query param <code>?document_type=LICENSE</code>. Max 10MB. Accepted: PDF, JPEG, PNG, WEBP.</p>
+    <pre>// Response 201
+{
+  "id":                "uuid",
+  "document_type":     "LICENSE",
+  "original_filename": "chiro_license.pdf",
+  "mime_type":         "application/pdf",
+  "file_size_bytes":   204800,
+  "created_at":        "2025-06-01T10:00:00Z"
+}</pre>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-get">GET</span>
+    <span class="endpoint-path">/v1/practitioners/me/documents/:id/download</span>
+    <span class="endpoint-summary">Get pre-signed S3 download URL (15 min)</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <pre>{ "url": "https://s3.amazonaws.com/chiroreferral-documents/..." }</pre>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-get">GET</span>
+    <span class="endpoint-path">/v1/practitioners/me/performance</span>
+    <span class="endpoint-summary">Get quality score and stats <span class="pill pill-green" style="font-size:10px">ACTIVE only</span></span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <pre>{
+  "quality_score": {
+    "composite_score":     82.5,
+    "claim_rate":          0.72,
+    "completion_rate":     0.91,
+    "avg_response_time_s": 145,
+    "avg_patient_rating":  4.8,
+    "score_date":          "2025-06-01"
+  },
+  "stats": {
+    "total":     48,
+    "claimed":   35,
+    "completed": 32
+  }
+}</pre>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-get">GET</span>
+    <span class="endpoint-path">/v1/practitioners/me/notifications</span>
+    <span class="endpoint-summary">List in-app notifications</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>Query params: <code>?cursor=&amp;limit=20</code></p>
+    <pre>{
+  "data": [{
+    "id":         "uuid",
+    "type":       "NEW_REFERRAL_AVAILABLE",
+    "title":      "New Referral Available",
+    "body":       "A new referral in Washington, DC matches your service area.",
+    "is_read":    false,
+    "created_at": "2025-06-01T10:00:00Z"
+  }],
+  "pagination": { "cursor": "...", "has_next": false, "limit": 20 }
+}</pre>
+  </div>
+</div>
+
+<!-- REFERRALS -->
+<h3 id="api-referrals">Referrals <span class="auth-tag">🔐 ACTIVE practitioners only</span></h3>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-get">GET</span>
+    <span class="endpoint-path">/v1/referrals/available</span>
+    <span class="endpoint-summary">List marketplace referrals (no PII)</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>Query params: <code>?cursor=&amp;limit=20&amp;urgency=HIGH</code></p>
+    <p>Returns referrals visible to this practitioner, ordered by <code>priority_score</code> (quality-weighted proximity). Marks items as viewed.</p>
+    <pre>{
+  "data": [{
+    "id":                "uuid",
+    "referral_number":   "REF-202506-100001",
+    "status":            "OPEN",
+    "primary_complaint": "Lower back pain",
+    "symptoms":          "Sharp pain when standing",
+    "urgency_level":     "HIGH",
+    "city":              "Washington",
+    "state":             "DC",
+    "distance_km":       12.4,
+    "priority_score":    9.87,
+    "published_at":      "2025-06-01T10:00:00Z",
+    "expires_at":        "2025-06-04T10:00:00Z",
+    "viewed_at":         null
+  }],
+  "pagination": { "cursor": "...", "has_next": true, "limit": 20 }
+}</pre>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-get">GET</span>
+    <span class="endpoint-path">/v1/referrals/available/:referralId</span>
+    <span class="endpoint-summary">Get referral detail (still no PII)</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>Adds <code>duration_of_problem</code>, <code>preferred_contact</code>, <code>additional_notes</code>, and <code>zip_code</code> (but not street address or patient name).</p>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-post">POST</span>
+    <span class="endpoint-path">/v1/referrals/available/:referralId/claim</span>
+    <span class="endpoint-summary">⚡ Claim a referral — atomic, first-wins</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="callout callout-red"><span class="callout-icon">🔴</span><div><strong>Required header:</strong> <code>Idempotency-Key: &lt;uuid&gt;</code> — supply a fresh UUID per claim attempt. Safe to retry with the same key on network failure.</div></div>
+    <div class="callout callout-amber"><span class="callout-icon">⚠️</span><div>If you receive <strong>423 Locked</strong>, retry after ~1 second. Another practitioner is mid-claim. You may still win if they fail.</div></div>
+    <h4>Response 200 — Claim successful (patient PII now included)</h4>
+    <pre>{
+  "referral_id":     "uuid",
+  "referral_number": "REF-202506-100001",
+  "status":          "CLAIMED",
+  "claimed_at":      "2025-06-01T10:05:33Z",
+  "token_balance":   4,
+  "patient": {
+    "first_name":     "John",
+    "last_name":      "Doe",
+    "phone":          "+12025551234",
+    "email":          "john@example.com",
+    "street_address": "123 Main St",
+    "city":           "Washington",
+    "state":          "DC",
+    "zip_code":       "20001"
+  }
+}</pre>
+    <h4>Error Responses</h4>
+    <table class="schema-table">
+      <tbody>
+        <tr><td>402</td><td>No active subscription or token balance = 0</td></tr>
+        <tr><td>409</td><td>Already claimed by another practitioner</td></tr>
+        <tr><td>423</td><td>Lock contention — retry in ~1 second</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-get">GET</span>
+    <span class="endpoint-path">/v1/referrals/claimed</span>
+    <span class="endpoint-summary">List claimed referrals with patient PII</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>Query params: <code>?cursor=&amp;limit=20&amp;status=CLAIMED</code></p>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-patch">PATCH</span>
+    <span class="endpoint-path">/v1/referrals/claimed/:referralId/status</span>
+    <span class="endpoint-summary">Advance referral status</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <div class="flow">
+      <span class="pill pill-green">CLAIMED</span><span class="flow-arrow">→</span>
+      <span class="pill pill-green">PATIENT_CONTACTED</span><span class="flow-arrow">→</span>
+      <span class="pill pill-green">APPOINTMENT_BOOKED</span><span class="flow-arrow">→</span>
+      <span class="pill pill-green">TREATMENT_IN_PROGRESS</span><span class="flow-arrow">→</span>
+      <span class="pill pill-purple">COMPLETED</span>
+    </div>
+    <pre>{
+  "status": "PATIENT_CONTACTED",
+  "notes":  "Left voicemail, will follow up tomorrow"
+}</pre>
+    <div class="callout callout-blue"><span class="callout-icon">ℹ️</span><div>Setting status to <code>COMPLETED</code> triggers a feedback request email to the patient.</div></div>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-get">GET</span>
+    <span class="endpoint-path">/v1/referrals/claimed/:referralId/timeline</span>
+    <span class="endpoint-summary">Full activity timeline</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <pre>{
+  "status_history": [{ "old_status": "CLAIMED", "new_status": "PATIENT_CONTACTED", "changed_at": "..." }],
+  "notes":          [{ "note_text": "...", "is_internal": false, "created_at": "..." }],
+  "activity_logs":  [{ "event_type": "VIEWED", "occurred_at": "..." }]
+}</pre>
+  </div>
+</div>
+
+<!-- WALLET -->
+<h3 id="api-wallet">Wallet &amp; Tokens <span class="auth-tag">🔐 Auth required</span></h3>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-get">GET</span>
+    <span class="endpoint-path">/v1/wallet</span>
+    <span class="endpoint-summary">Get token balance</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <pre>{
+  "id":              "uuid",
+  "balance":         14,
+  "total_purchased": 50,
+  "total_allocated": 20,
+  "total_used":      56,
+  "total_expired":   0,
+  "updated_at":      "2025-06-01T10:00:00Z"
+}</pre>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-get">GET</span>
+    <span class="endpoint-path">/v1/wallet/packages</span>
+    <span class="endpoint-summary">List purchasable token packages</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <pre>{
+  "data": [
+    { "id": "uuid", "token_count": 10,  "price_cents": 1500 },
+    { "id": "uuid", "token_count": 25,  "price_cents": 3500 },
+    { "id": "uuid", "token_count": 50,  "price_cents": 6500 },
+    { "id": "uuid", "token_count": 100, "price_cents": 12000 }
+  ]
+}</pre>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-post">POST</span>
+    <span class="endpoint-path">/v1/wallet/purchase</span>
+    <span class="endpoint-summary">Purchase token package</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>Required header: <code>Idempotency-Key: &lt;uuid&gt;</code></p>
+    <pre>{
+  "package_id":        "uuid-of-package",
+  "payment_method_id": "pm_..."         // Stripe PaymentMethod ID
+}</pre>
+    <h4>Response 200</h4>
+    <pre>{
+  "transaction_id": "uuid",
+  "tokens_added":   25,
+  "new_balance":    39
+}</pre>
+  </div>
+</div>
+
+<!-- SUBSCRIPTIONS -->
+<h3 id="api-subscriptions">Subscriptions <span class="auth-tag">🔐 Auth required</span></h3>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-get">GET</span>
+    <span class="endpoint-path">/v1/subscriptions/plans</span>
+    <span class="endpoint-summary">List plans (public)</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>Same data as <code>/v1/public/subscription-plans</code>.</p>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-get">GET</span>
+    <span class="endpoint-path">/v1/subscriptions</span>
+    <span class="endpoint-summary">Get current subscription</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <pre>{
+  "id":                   "uuid",
+  "status":               "ACTIVE",
+  "plan_name":            "Professional",
+  "monthly_price_cents":  9900,
+  "included_tokens":      15,
+  "current_period_start": "2025-06-01T00:00:00Z",
+  "current_period_end":   "2025-07-01T00:00:00Z",
+  "cancelled_at":         null
+}</pre>
+    <p>Returns <code>{ "status": "NONE" }</code> if no subscription exists.</p>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-post">POST</span>
+    <span class="endpoint-path">/v1/subscriptions</span>
+    <span class="endpoint-summary">Subscribe to a plan</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>Required header: <code>Idempotency-Key: &lt;uuid&gt;</code></p>
+    <pre>{
+  "plan_id":           "uuid-of-plan",
+  "payment_method_id": "pm_..."
+}</pre>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-patch">PATCH</span>
+    <span class="endpoint-path">/v1/subscriptions</span>
+    <span class="endpoint-summary">Upgrade or downgrade plan</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <pre>{ "plan_id": "uuid-of-new-plan" }</pre>
+    <p>Stripe prorates the difference immediately.</p>
+  </div>
+</div>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-post">POST</span>
+    <span class="endpoint-path">/v1/subscriptions/cancel</span>
+    <span class="endpoint-summary">Cancel at period end</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>No body required. Access is retained until <code>current_period_end</code>.</p>
+  </div>
+</div>
+
+<!-- FEEDBACK -->
+<h3 id="api-feedback">Feedback <span class="rate-tag">Public — token authenticated</span></h3>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-post">POST</span>
+    <span class="endpoint-path">/v1/feedback/:referralId?token=&lt;hmac&gt;</span>
+    <span class="endpoint-summary">Submit patient feedback</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>Public endpoint. Patients receive a signed link in their post-treatment email. The <code>token</code> query param is HMAC-signed and ties the feedback to the specific referral+patient pair.</p>
+    <pre>{
+  "rating_communication":   5,
+  "rating_professionalism": 4,
+  "rating_service":         5,
+  "rating_overall":         5,
+  "comments": "Dr. Smith was excellent. Very thorough and explained everything clearly."
+}</pre>
+    <div class="callout callout-blue"><span class="callout-icon">ℹ️</span><div>One submission per referral. Submitting closes the referral and triggers quality score recomputation for the practitioner.</div></div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<h3 id="api-admin">Admin <span class="auth-tag">🔐 Admin role required</span></h3>
+
+<table class="schema-table">
+  <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
+  <tbody>
+    <tr><td><span class="badge badge-get">GET</span></td><td class="field-name">/v1/admin/practitioners</td><td>List all practitioners with status filter + search</td></tr>
+    <tr><td><span class="badge badge-get">GET</span></td><td class="field-name">/v1/admin/practitioners/:id</td><td>Full detail: profile, documents, stats, warnings</td></tr>
+    <tr><td><span class="badge badge-post">POST</span></td><td class="field-name">/v1/admin/practitioners/:id/approve</td><td>Approve application → sets status ACTIVE</td></tr>
+    <tr><td><span class="badge badge-post">POST</span></td><td class="field-name">/v1/admin/practitioners/:id/reject</td><td>Reject application (reason required)</td></tr>
+    <tr><td><span class="badge badge-post">POST</span></td><td class="field-name">/v1/admin/practitioners/:id/suspend</td><td>Suspend practitioner (reason required)</td></tr>
+    <tr><td><span class="badge badge-post">POST</span></td><td class="field-name">/v1/admin/practitioners/:id/reactivate</td><td>Reactivate suspended practitioner</td></tr>
+    <tr><td><span class="badge badge-post">POST</span></td><td class="field-name">/v1/admin/practitioners/:id/warn</td><td>Issue formal warning (reason required)</td></tr>
+    <tr><td><span class="badge badge-get">GET</span></td><td class="field-name">/v1/admin/referrals</td><td>List all referrals (any status) with full PII</td></tr>
+    <tr><td><span class="badge badge-get">GET</span></td><td class="field-name">/v1/admin/referrals/:id</td><td>Full referral detail with patient PII</td></tr>
+    <tr><td><span class="badge badge-post">POST</span></td><td class="field-name">/v1/admin/referrals/:id/reassign</td><td>Override claim to different practitioner</td></tr>
+    <tr><td><span class="badge badge-post">POST</span></td><td class="field-name">/v1/admin/referrals/:id/close</td><td>Force-close a referral</td></tr>
+    <tr><td><span class="badge badge-get">GET</span></td><td class="field-name">/v1/admin/settings</td><td>Get all system settings</td></tr>
+    <tr><td><span class="badge badge-patch">PATCH</span></td><td class="field-name">/v1/admin/settings</td><td>Update settings (referral expiry, quality weights, etc.)</td></tr>
+    <tr><td><span class="badge badge-get">GET</span></td><td class="field-name">/v1/admin/analytics/overview</td><td>Platform overview stats</td></tr>
+    <tr><td><span class="badge badge-get">GET</span></td><td class="field-name">/v1/admin/analytics/revenue</td><td>Revenue analytics by date range</td></tr>
+    <tr><td><span class="badge badge-get">GET</span></td><td class="field-name">/v1/admin/analytics/referrals</td><td>Referral analytics by date range</td></tr>
+    <tr><td><span class="badge badge-get">GET</span></td><td class="field-name">/v1/admin/audit-logs</td><td>Tamper-evident audit log (filterable by entity)</td></tr>
+    <tr><td><span class="badge badge-get">GET</span></td><td class="field-name">/v1/admin/users</td><td>List all users</td></tr>
+    <tr><td><span class="badge badge-post">POST</span></td><td class="field-name">/v1/admin/users/:id/disable</td><td>Disable user account</td></tr>
+    <tr><td><span class="badge badge-post">POST</span></td><td class="field-name">/v1/admin/users/:id/reactivate</td><td>Reactivate disabled user</td></tr>
+  </tbody>
+</table>
+
+<!-- SSE -->
+<h3 id="api-sse">Live Feed — Server-Sent Events <span class="auth-tag">🔐 ACTIVE only</span></h3>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-get">GET</span>
+    <span class="endpoint-path">/v1/referrals/stream</span>
+    <span class="endpoint-summary">Live referral notifications (text/event-stream)</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>Opens a persistent connection. The server pushes events as they occur.</p>
+    <pre>// Connection established
+event: connected
+data: {"status":"connected"}
+
+// New referral in your area
+data: {"event":"referral_available","referral_id":"uuid"}
+
+// A referral you could see was just claimed by someone else
+data: {"event":"referral_revoked","referral_id":"uuid"}
+
+// In-app notification created
+data: {"event":"notification","notification_id":"uuid","type":"NEW_REFERRAL_AVAILABLE","title":"New Referral Available"}
+
+// Heartbeat (every 30s — prevents proxy timeout)
+: heartbeat</pre>
+    <div class="callout callout-blue"><span class="callout-icon">ℹ️</span><div>Clients should reconnect automatically on disconnect (built-in browser EventSource behaviour). The <code>retry:</code> field defaults to 3 seconds.</div></div>
+    <h4>JavaScript Example</h4>
+    <pre>const es = new EventSource('/v1/referrals/stream', {
+  headers: { Authorization: `Bearer ${accessToken}` }
+});
+es.addEventListener('message', (e) => {
+  const event = JSON.parse(e.data);
+  if (event.event === 'referral_available') {
+    // show toast / refresh list
+  }
+});</pre>
+  </div>
+</div>
+
+<!-- WEBHOOKS -->
+<h3 id="api-webhooks">Stripe Webhooks</h3>
+
+<div class="endpoint">
+  <div class="endpoint-header" onclick="toggle(this)">
+    <span class="badge badge-post">POST</span>
+    <span class="endpoint-path">/v1/webhooks/stripe</span>
+    <span class="endpoint-summary">Stripe event receiver</span>
+    <span class="endpoint-chevron">▶</span>
+  </div>
+  <div class="endpoint-body">
+    <p>Configure in your Stripe dashboard. The server verifies the <code>Stripe-Signature</code> header before processing.</p>
+    <table class="schema-table">
+      <thead><tr><th>Event</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td><code>invoice.payment_succeeded</code></td><td>Allocates monthly tokens from plan, sets subscription ACTIVE</td></tr>
+        <tr><td><code>invoice.payment_failed</code></td><td>Sets subscription PAST_DUE, sends alert email to practitioner</td></tr>
+        <tr><td><code>customer.subscription.deleted</code></td><td>Sets subscription CANCELLED</td></tr>
+        <tr><td><code>customer.subscription.updated</code></td><td>Syncs subscription status</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- OPS -->
+<h3 id="api-ops">Health &amp; Metrics</h3>
+
+<table class="schema-table">
+  <thead><tr><th>Method</th><th>Path</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><span class="badge badge-get">GET</span></td><td class="field-name">/healthz</td><td>Liveness probe — returns 200 if process is alive</td></tr>
+    <tr><td><span class="badge badge-get">GET</span></td><td class="field-name">/readyz</td><td>Readiness probe — checks PostgreSQL + Redis, returns 503 if either is down</td></tr>
+    <tr><td><span class="badge badge-get">GET</span></td><td class="field-name">/metrics</td><td>Prometheus text metrics (internal cluster access only)</td></tr>
+  </tbody>
+</table>
+
+<hr class="divider" />
+
+<p style="font-size:12px;color:var(--gray-400);text-align:center;margin-top:32px">
+  ChiroReferral Network API Reference v1.0 &nbsp;·&nbsp;
+  Generated from source &nbsp;·&nbsp;
+  Interactive Swagger UI at <code>/docs</code>
+</p>
+
+</main>
+
+<script>
+  function toggle(header) {
+    const body = header.nextElementSibling;
+    const chevron = header.querySelector('.endpoint-chevron');
+    body.classList.toggle('open');
+    chevron.classList.toggle('open');
+  }
+
+  // Highlight active sidebar link on scroll
+  const headings = document.querySelectorAll('[id]');
+  const links = document.querySelectorAll('.sidebar a');
+
+  function updateActive() {
+    let current = '';
+    headings.forEach(h => {
+      if (h.getBoundingClientRect().top <= 80) current = h.id;
+    });
+    links.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  }
+
+  document.querySelector('.main').addEventListener('scroll', updateActive);
+  updateActive();
+</script>
+</body>
+</html>

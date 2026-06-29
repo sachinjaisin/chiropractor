@@ -1,0 +1,600 @@
+Chiropractor Referral Network
+Functional Specification & Development Scope
+1. System Overview
+Purpose of the Platform
+The platform is a referral marketplace connecting patients seeking chiropractic care with chiropractors within the network.
+Patients submit referral requests through a public referral form.
+The platform evaluates all chiropractors based on predefined eligibility rules and determines which practitioners should be able to view the referral opportunity.
+Unlike a traditional referral assignment model, referrals are not automatically assigned to a single practitioner.
+Instead:
+Multiple eligible chiropractors may view the referral.
+Patient contact details remain hidden.
+Chiropractors can review referral details and decide whether they wish to claim the referral.
+The first eligible chiropractor to successfully claim the referral receives exclusive ownership.
+A lead token is deducted at the time of claim.
+Patient contact information is then unlocked for the claiming practitioner.
+All other practitioners immediately lose access to the referral.
+The platform generates revenue through subscription plans and lead-token purchases while also providing referral tracking, practitioner performance monitoring, patient feedback collection, compliance management, and business analytics.
+Core Business Workflow
+Practitioner Journey
+Register↓
+Complete Profile↓
+Upload Verification Documents↓
+Admin Approval↓
+Subscribe to Plan↓
+Receive Referral Opportunities↓
+Claim Referrals↓
+Treat Patients↓
+Receive Feedback↓
+Build Performance Score
+Referral Journey
+Patient Submits Referral↓
+Referral Created↓
+Matching Engine Runs↓
+Referral Published to Eligible Practitioners↓
+Practitioner Claims Referral↓
+Token Deducted↓
+Patient Details Revealed↓
+Patient Contacted↓
+Appointment Booked↓
+Treatment Completed↓
+Feedback Collected↓
+Referral Closed
+2. Platform Foundation, User Management & Core User Setup
+Purpose
+Establish the platform foundation, user management system, practitioner registration process, patient referral intake, and initial dashboards.
+This milestone creates the core framework required for future referral and monetization functionality.
+Workflow 1 – Chiropractor Registration
+Purpose
+Allow chiropractors to create accounts and begin joining the referral network.
+Registration Fields
+Personal Information
+First Name
+Last Name
+Email Address
+Phone Number
+Password
+Confirm Password
+System Actions
+Upon successful registration:
+User account created
+User role assigned as Chiropractor
+Registration timestamp recorded
+Status
+PENDING_PROFILE
+Related Screens
+Registration Screen
+Admin User Management Screen
+Workflow 2 – Practitioner Profile Completion
+Purpose
+Collect all information required for practitioner listing and future referral matching.
+Practice Information
+Practice Name
+Practice Address
+City
+State
+Zip Code
+Website
+Practice Phone
+Practice Email
+Professional Information
+Bio
+Years of Experience
+Languages Spoken
+Coverage Information
+Service Radius
+Areas Served
+Specialties
+Multi-select:
+Back Pain
+Neck Pain
+Sports Injury
+Pregnancy
+Pediatrics
+Rehabilitation
+Wellness Care
+Other
+System Actions
+Practitioner profile created
+Profile linked to user account
+Status
+PROFILE_COMPLETED
+Related Screens
+Profile Management Screen
+Workflow 3 – Verification Submission
+Purpose
+Collect professional credentials before approval.
+Required Documents
+Chiropractic License
+Insurance Certificate
+Professional Certifications
+Training Verification
+Additional Supporting Documents
+System Actions
+Documents uploaded
+Verification record created
+Admin notified
+Status
+PENDING_APPROVAL
+Related Screens
+Verification Upload Screen
+Admin Approval Queue
+Workflow 4 – Admin Approval Workflow
+Purpose
+Review practitioners before activation.
+Admin Review Information
+Practitioner Profile
+Practice Information
+Service Areas
+Uploaded Documents
+Admin Actions
+Approve
+Reject
+Request Additional Information
+System Actions
+If Approved:
+Status becomes ACTIVE
+Practitioner gains platform access
+If Rejected:
+Status becomes REJECTED
+Related Screens
+Practitioner Approval Screen
+Admin Dashboard
+Workflow 5 – Patient Referral Intake Form
+Purpose
+Capture referral requests from patients.
+Patient Information
+First Name
+Last Name
+Phone Number
+Email Address
+Location Information
+Street Address
+City
+State
+Zip Code
+Referral Information
+Primary Complaint
+Symptoms
+Duration of Problem
+Urgency Level
+Preferred Contact Method
+Additional Notes
+System Actions
+Patient record created
+Referral record created
+Referral stored in database
+Status
+NEW
+Related Screens
+Patient Referral Form
+Workflow 6 – Initial Dashboard Structure
+Chiropractor Dashboard
+Available Sections:
+Dashboard
+Profile
+Documents
+Notifications
+Admin Dashboard
+Available Sections:
+Practitioner Management
+User Management
+Referral Overview
+Statistics
+Screen-by-Screen Specification (Milestone 1)
+Registration Screen
+Purpose
+Allow chiropractors to create accounts.
+Fields
+First Name
+Last Name
+Email
+Phone
+Password
+Confirm Password
+Validation
+Required fields
+Valid email
+Password confirmation match
+Actions
+Register
+Navigate to Login
+Profile Management Screen
+Purpose
+Allow practitioners to complete and update profile information.
+Sections
+Practice Information
+Professional Information
+Coverage Information
+Specialties
+Actions
+Save Changes
+Verification Upload Screen
+Purpose
+Upload professional credentials.
+Upload Types
+License
+Insurance
+Certifications
+Training Documents
+Actions
+Upload
+Replace
+Delete
+Admin Dashboard
+Purpose
+Provide operational oversight.
+Widgets
+Pending Approvals
+Active Practitioners
+Total Users
+Referral Counts
+Practitioner Approval Screen
+Purpose
+Review practitioner applications.
+Actions
+Approve
+Reject
+Request Information
+3. Milestone 2
+Practitioner Workflow System, Referral Management & Core Admin Features
+Purpose
+Transform the platform into an operational referral network.
+Workflow 1 – Authentication
+Login
+Fields:
+Email
+Password
+System Actions
+Authenticate user
+Create session
+Redirect to dashboard
+Forgot Password
+Fields:
+Email Address
+System Actions
+Generate reset token
+Send reset email
+Change Password
+Fields:
+Current Password
+New Password
+Confirm Password
+Workflow 2 – Practitioner Onboarding Completion
+Purpose
+Complete onboarding after registration.
+Includes
+Verification review
+Approval process
+Profile completion validation
+Workflow 3 – Referral Matching Engine
+Purpose
+Determine which practitioners can view referrals.
+Eligibility Rules
+Practitioner must be:
+ACTIVE
+Approved
+Not Suspended
+Within Service Radius
+Future Enhancements
+Specialty matching
+Referral weighting
+System Actions
+Generate referral visibility list.
+Workflow 4 – Referral Marketplace
+Purpose
+Present available referrals to eligible practitioners.
+Visible Information
+Referral Number
+General Area
+Distance
+Referral Type
+Symptoms
+Referral Age
+Submission Date
+Hidden Information
+Marketplace Rules
+• A referral may be visible to multiple eligible practitioners simultaneously.
+• Patient contact information remains hidden while a referral is available.
+• Practitioners can review referral details before claiming.
+• The first successful claim receives exclusive ownership.
+• Once claimed, patient information becomes visible only to the claiming practitioner.
+• The referral is removed from all other practitioner feeds.
+Patient Name
+Phone Number
+Email Address
+Exact Address
+Workflow 5 – Referral Exclusivity Locking
+Purpose
+Ensure only one practitioner owns a referral.
+Rules
+Multiple practitioners may view referral
+First successful claim wins
+Ownership becomes exclusive
+System Actions
+Lock referral
+Create ownership record
+Remove visibility from other practitioners
+Workflow 6 – Referral Lifecycle Tracking
+Status Flow
+OPEN
+↓
+CLAIMED
+↓
+PATIENT_CONTACTED
+↓
+APPOINTMENT_BOOKED
+↓
+TREATMENT_IN_PROGRESS
+↓
+COMPLETED
+↓
+CLOSED
+System Actions
+Every status update recorded.
+Workflow 7 – Referral Activity Timeline
+Events Recorded
+Referral Created
+Referral Published
+Referral Viewed
+Referral Claimed
+Patient Contacted
+Appointment Booked
+Completed
+Purpose
+Provide complete audit trail.
+Workflow 8 – Response Time Tracking
+Calculation
+Claim Time
+minus
+Referral Published Time
+Usage
+Performance reporting
+Quality scoring
+Workflow 9 – Basic Compliance & Performance Scoring
+Metrics
+Response Rate
+Claim Rate
+Completion Rate
+Workflow 10 – User Management
+• Search Users
+• Reactivate Users
+• View User History
+Admin can:
+View Users
+Edit Users
+Disable Users
+Workflow 11 – Practitioner Approval Queue
+Admin can:
+Review Applications
+Approve
+Reject
+Request Information
+Workflow 12 – Live Referral Management
+Admin can:
+View Referrals
+Reassign Referrals
+Close Referrals
+Workflow 13 – Unclaimed Referral Monitoring
+Business Rules
+• Referral expiration period is administrator configurable.
+• Unclaimed referrals are flagged for review.
+• Administrators receive notifications regarding unclaimed referrals.
+• Administrators may intervene, reassign, extend visibility, or close referrals.
+Purpose
+Track referrals not claimed within defined period.
+System Actions
+Flag referral
+Notify admin
+Allow intervention
+Workflow 14 – Audit Logs
+Record:
+User actions
+Referral actions
+Administrative actions
+Workflow 15 – Email & System Notifications
+Practitioner Notifications
+New Referral Available
+Referral Claimed
+Approval Status
+Password Reset
+Admin Notifications
+New Application
+Unclaimed Referral
+Compliance Alert
+Screen-by-Screen Specification (Milestone 2)
+Login Screen
+Forgot Password Screen
+Change Password Screen
+Practitioner Dashboard
+Widgets:
+Available Referrals
+Claimed Referrals
+Notifications
+Performance Summary
+Available Referrals Screen
+Columns:
+Referral Number
+Location
+Distance
+Referral Type
+Date Submitted
+Actions:
+View Details
+Claim Referral
+Referral Detail Screen
+Displays:
+Referral Information
+Symptoms
+Notes
+Actions:
+Claim Referral
+Claimed Referrals Screen
+Displays:
+Patient Information
+Referral Status
+Activity History
+Actions:
+Update Status
+Add Notes
+Referral History Screen
+Displays:
+Timeline
+Status History
+Notes
+Notifications Screen
+Displays:
+System Notifications
+Referral Notifications
+Admin Referral Management Screen
+Actions:
+View
+Edit
+Reassign
+Close
+Unclaimed Referral Monitoring Screen
+User Management Screen
+Purpose: Allow administrators to manage platform users.
+• Search users
+• View user details
+• Edit user information
+• Disable users
+• Reactivate users
+Practitioner Detail Screen
+Purpose: Allow administrators to review practitioner information and performance.
+• Profile Information
+• Verification Documents
+• Referral Statistics
+• Performance Metrics
+• Warning History
+• Status History
+Displays:
+Unclaimed Referrals
+Referral Age
+Escalation Actions
+4. Milestone 3
+Monetization, Feedback, Quality Control & Advanced Administration
+Purpose
+Monetize referral access and introduce quality-control systems.
+Workflow 1 – Subscription Plans
+Fields
+Plan Name
+Monthly Price
+Included Tokens
+Description
+Status
+Workflow 2 – Subscription Purchase
+Actions
+Subscribe
+Upgrade
+Downgrade
+Cancel
+Workflow 3 – Monthly Lead Allocation
+Business Rules
+• Tokens are automatically allocated upon successful subscription renewal.
+• Allocation quantity is determined by the subscription plan.
+• Token allocation creates a wallet transaction record.
+• Token expiration rules are configurable by administrators.
+Process
+Subscription Renewal
+↓
+Token Allocation
+↓
+Wallet Updated
+↓
+Transaction Created
+Workflow 4 – Lead Token Purchasing
+Packages
+10 Tokens
+25 Tokens
+50 Tokens
+100 Tokens
+Workflow 5 – Token Balance Tracking
+Wallet Stores
+Current Balance
+Purchased Tokens
+Used Tokens
+• Allocated Tokens
+• Expired Tokens (if enabled)
+Workflow 6 – Automatic Token Deduction
+Triggered when referral claim succeeds.
+Workflow 7 – Referral Claim Engine
+Validation
+Active Subscription
+Available Tokens
+Referral Available
+Transaction Process
+Lock Referral
+↓
+Deduct Token
+↓
+Create Transaction Record
+↓
+Assign Ownership
+↓
+Unlock Patient Information
+↓
+Create Audit Record
+Workflow 8 – Stripe Integration
+Supports:
+Subscription Billing
+Token Purchases
+Renewals
+Workflow 9 – Revenue Reporting
+Tracks:
+Subscription Revenue
+Token Revenue
+Referral Revenue
+Workflow 10 – Transaction History
+Tracks:
+Purchases
+Allocations
+Claims
+Refunds
+Workflow 11 – Patient Feedback
+Fields
+Communication Rating
+Professionalism Rating
+Service Rating
+Overall Rating
+Comments
+Workflow 12 – Practitioner Quality Scoring
+Metrics
+Response Time
+Completion Rate
+Patient Ratings
+Compliance History
+Workflow 13 – Referral Priority Weighting
+Higher quality practitioners may:
+See referrals sooner
+Receive higher visibility
+Rank higher in referral feeds
+Workflow 14 – Compliance Monitoring
+Admin can:
+Review Complaints
+Review Ratings
+Review Performance Trends
+Workflow 15 – Warning System
+Admin can:
+Issue Warning
+Record Reason
+Track Warning History
+Workflow 16 – Practitioner Flagging & Suspension
+Suspension Effects
+• Suspended practitioners cannot view referrals.
+• Suspended practitioners cannot claim referrals.
+• Suspended practitioners cannot receive new referral opportunities.
+• Retain access to historical claimed referrals.
+• May be reactivated by an administrator.
+Admin can:
+Flag Practitioner
+Suspend Practitioner
+Reactivate Practitioner
+Workflow 17 – Advanced Analytics
+Referral Analytics
+Open Referrals
+Claimed Referrals
+Completion Rate
+Practitioner Analytics
+Acceptance Rates
+Response Times

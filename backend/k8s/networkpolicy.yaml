@@ -1,0 +1,52 @@
+---
+# API pods: only accept traffic from ALB ingress; only egress to DB, Redis, external HTTPS
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-netpol
+  namespace: chiroreferral
+spec:
+  podSelector:
+    matchLabels:
+      app: api
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+        - podSelector: {}  # from same namespace (metrics scraping)
+      ports:
+        - protocol: TCP
+          port: 3000
+  egress:
+    - ports:
+        - port: 5432    # PostgreSQL
+        - port: 6379    # Redis
+        - port: 443     # External HTTPS (Stripe, SendGrid, Google, AWS)
+        - port: 53      # DNS
+          protocol: UDP
+---
+# Worker pods: no ingress, only egress to DB and Redis
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: worker-netpol
+  namespace: chiroreferral
+spec:
+  podSelector:
+    matchLabels:
+      app: worker
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress: []  # No ingress
+  egress:
+    - ports:
+        - port: 5432
+        - port: 6379
+        - port: 443
+        - port: 53
+          protocol: UDP

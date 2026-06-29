@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Chiropractor</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/style.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/responsive.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/owl.carousel.min.css">
+    <link rel="stylesheet" type="text/css" href="assets/css/line-awesome.min.css"> 
+</head>
+<body class="dashbody" id="addclass">
+
+<div class="topbar">
+  <div class="container-fluid">
+  <div class="row">    
+    <div class="col-md-5">       
+        <div class="sidebar-logo">
+         <a href="index.html"><img src="assets/images/logo.png" class="img-fluid" alt=""></a>
+        </div>
+    </div>
+    <div class="col-md-7">      
+      <div class="topbar-right"> 
+            
+        <div class="header-right navbar">
+          <div class="mobile-logo">
+             <a href="#"><img src="assets/images/logo.png" class="img-fluid" alt=""></a>
+            </div> 
+          <ul class="navbar-nav ms-auto">  
+          <li class="nav-item upgrade-nav">
+            <a class="nav-link" href="#"><i class="la la-star"></i>34 Tokens</a>
+          </li>      
+          <li class="nav-item dropdown notifications">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <img src="assets/images/notifications.svg" class="img-fluid" alt="">
+              </a>
+              <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">Lorem ipsum...<span>12min</span></a></li>
+                    <li><a class="dropdown-item" href="#">Lorem ipsum...<span>12min</span></a></li>
+                    <li><a class="dropdown-item" href="#">Lorem ipsum...<span>12min</span></a></li>                  
+              </ul>
+          </li>
+          <li class="nav-item dropdown profiledrop">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <img src="assets/images/user.png" class="img-fluid" alt="">
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#"><img src="assets/images/profile.svg" class="img-fluid" alt="">Profile</a></li>
+              <li><a class="dropdown-item" href="#"><img src="assets/images/settings.svg" class="img-fluid" alt="">Settings</a></li>
+              <li><a class="dropdown-item" href="index.html"><img src="assets/images/logout.svg" class="img-fluid" alt="">Logout</a></li>
+            </ul>
+          </li>
+          <li class="menuicon" id="menuicon">
+            <button><img src="assets/images/Menu.svg" class="img-fluid" alt=""></button>
+          </li>
+         
+          </ul>         
+
+      </div>
+      </div>
+    </div>
+  </div>
+   </div>
+</div>
+
+<div class="sidebar">   
+  <!-- <div class="sidebar-logo">
+   <a href="index.html"><img src="assets/images/logo.png" class="img-fluid" alt=""></a>
+  </div> -->
+   <ul>
+     <li><a href="dashboard.html">
+      <span><img src="assets/images/dashboard.svg" class="img-fluid" alt=""></span>Dashboard</a></li>
+     <li><a href="#">
+      <span><img src="assets/images/notifications.svg" class="img-fluid" alt=""></span>Notifications</a></li>
+     <li><a href="#">
+      <span><img src="assets/images/documents.svg" class="img-fluid" alt=""></span>Documents</a></li>
+     <li class="active"><a href="#">
+      <span><img src="assets/images/marketplace.svg" class="img-fluid" alt=""></span>Marketplace</a></li>    
+     <li><a href="#">
+      <span><img src="assets/images/tokenwallet.svg" class="img-fluid" alt=""></span>Token Wallet</a></li>
+     <li><a href="">
+      <span><img src="assets/images/subscription.svg" class="img-fluid" alt=""></span>Subscription</a></li>
+     <li><a href="#">
+      <span><img src="assets/images/feedback.svg" class="img-fluid" alt=""></span>Feedback</a></li>  
+      <li><a href="#">
+      <span><img src="assets/images/profile.svg" class="img-fluid" alt=""></span>Profile</a></li>     
+   </ul>
+</div>
+
+
+
+<div class="mainbody">
+  <div class="container-fluid">
+    <div class="row toprow">
+      <div class="col-md-12">
+        <div class="page-title">
+          <h1>Referral Marketplace</h1>
+          <p>Browse and claim referrals you're eligible to accept.</p>
+        </div>
+      </div>
+    </div>
+
+    
+     <div class="carddesign">
+       <div class="cardbody">
+        <div class="row filterrow">
+          <div class="col-md-4">
+            <h2>Filter by Urgency</h2>
+          </div>
+          <div class="col-md-8">
+            <ul class="filterlist">
+              <li><button class="btn btn-info active" value="button">All Urgencies</button></li>
+              <li><button class="btn btn-info" value="button">Low</button></li>
+              <li><button class="btn btn-info" value="button">Normal</button></li>
+              <li><button class="btn btn-info" value="button">High</button></li>
+              <li><button class="btn btn-info" value="button">Urgent</button></li>
+            </ul>
+          </div>
+        </div>
+       </div>
+     </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="carddesign">
+          <div class="cardbody">
+            <div class="tabledesign filterno whitebg">
+              <div class="table-responsive">
+                <table class="table dt-responsive categories_table">
+                  <thead>
+                      <tr>
+                        <th style="min-width: 70px;">REFERRAL #</th>
+                        <th style="min-width: 100px;">GENERAL AREA</th>
+                        <th style="min-width: 70px;">DISTANCE</th> 
+                        <th style="min-width: 100px;">REFERRAL TYPE</th>  
+                        <th style="min-width: 100px;">SYMPTOMS</th>  
+                        <th style="min-width: 100px;">REFERRAL AGE</th> 
+                        <th style="min-width: 100px;">SUBMISSION DATE</th> 
+                        <th style="min-width: 60px;">ACTION</th>                         
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>REF-2026-0001</td>
+                        <td>Downtown</td>
+                        <td>2.4 km</td>
+                        <td>Physiotherapy</td>
+                        <td>Lower back pain, Stiffness</td>
+                        <td>1h 20m</td>
+                        <td>9 Jun 2026 10:30 AM</td>
+                        <td class="tdaction">                        
+                          <a href="#"><img src="assets/images/tdeye.svg" class="img-fluid" title="View Details" alt=""></a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>REF-2026-0002</td>
+                        <td>Northside</td>
+                        <td>3.1 km</td>
+                        <td>Chiropractic</td>
+                        <td>Neck pain, Headache</td>
+                        <td>2h 15m</td>
+                        <td>9 Jun 2026 09:45 AM</td>
+                        <td class="tdaction">                        
+                          <a href="#"><img src="assets/images/tdeye.svg" class="img-fluid" title="View Details" alt=""></a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>REF-2026-0003 </td>
+                        <td>West End</td>
+                        <td>4.7 km</td>
+                        <td>Massage Therapy</td>
+                        <td>Shoulder pain, Tight muscles</td>
+                        <td>3h 05m</td>
+                        <td>9 Jun 2026 09:00 AM</td>
+                        <td class="tdaction">                        
+                          <a href="#"><img src="assets/images/tdeye.svg" class="img-fluid" title="View Details" alt=""></a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>REF-2026-0004</td>
+                        <td>Midtown</td>
+                        <td>1.8 km</td>
+                        <td>Physiotherapy</td>
+                        <td>Knee pain, Swelling</td>
+                        <td>4h 10m</td>
+                        <td>9 Jun 2026 08:15 AM</td>
+                        <td class="tdaction">                        
+                          <a href="#"><img src="assets/images/tdeye.svg" class="img-fluid" title="View Details" alt=""></a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>REF-2026-0005</td>
+                        <td>Eastside</td>
+                        <td>5.2 km</td>
+                        <td>Chiropractic</td>
+                        <td>Lower back pain, Sciatica</td>
+                        <td>5h 25m</td>
+                        <td>9 Jun 2026 10:30 AM</td>
+                        <td class="tdaction">                        
+                          <a href="#"><img src="assets/images/tdeye.svg" class="img-fluid" title="View Details" alt=""></a>
+                        </td>
+                      </tr>
+                    </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- container -->
+</div>
+
+
+
+
+
+
+
+<div class="dashboard-footer">
+ <div class="container-fluid">
+  <div class="row">
+    <div class="col-md-6">
+      <div class="copyright-left">
+        <p>© 2026 Chiropractor. All rights reserved.</p>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="copyright-right">
+         <ul>
+           <li><a href="#">Terms of Use</a></li>
+           <li><a href="#">Privacy Policy</a></li>
+         </ul>         
+      </div>
+    </div>
+  </div>
+ </div>
+</div>
+<script src="assets/js/jquery.min.js"></script>
+<script src="assets/js/bootstrap.bundle.min.js"></script>
+ <script src="assets/js/owl.carousel.js"></script>
+ <script>
+  jQuery(document).ready(function($) {
+    $('#owl-demo1').owlCarousel({
+      center: false,
+      items: 1,
+      loop: true,
+      margin: 0,
+      responsive: {
+        500: {
+          items: 1
+        },
+        900: {
+          items: 2
+        },
+        1200: {
+          items: 3
+        }
+      }
+    });
+    $( ".owl-prev").html('<i class="fa fa-angle-left" aria-hidden="true"></i>');
+    $( ".owl-next").html('<i class="fa fa-angle-right" aria-hidden="true"></i>');
+  });
+</script>
+ <script>
+  jQuery(document).ready(function($) {
+    $('#owl-demo2').owlCarousel({
+      center: false,
+      items: 1,
+      loop: true,
+      margin: 0,
+      responsive: {
+        500: {
+          items: 1
+        },
+        900: {
+          items: 2
+        },
+        1200: {
+          items: 4
+        }
+      }
+    });
+    $( ".owl-prev").html('<i class="fa fa-angle-left" aria-hidden="true"></i>');
+    $( ".owl-next").html('<i class="fa fa-angle-right" aria-hidden="true"></i>');
+  });
+</script>
+<!-- datatables -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" />
+  <script type="text/javascript"src="https://code.jquery.com/jquery-3.5.1.js"> </script>
+  <script type="text/javascript" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"> </script>
+  <script>
+      $('.categories_table').DataTable();
+  </script>
+<!-- datatables -->
+<script> 
+ $(document).ready(function(){    
+ $("#menuicon").click(function(){      
+ $('#addclass').toggleClass('opennav') ; 
+ });  
+ });
+</script>
+</body>
+</html>
+
+

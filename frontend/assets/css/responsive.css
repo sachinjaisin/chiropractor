@@ -1,0 +1,197 @@
+@media (min-width: 320px) and (max-width: 1199px) {
+.menuicon {
+    display: inline-block;
+    margin-left: 13px;
+}
+.topbar {
+    padding: 20px 10px 20px 10px;
+} 
+.sidebar {
+    left: -100%;
+}
+.mainbody {
+    padding: 110px 10px 30px 10px;
+}
+.dashboard-footer {
+    padding: 13px 10px 13px 10px;
+    text-align: center;
+}
+.upgrade-nav {
+    display: none !important;
+}
+.header-right ul.navbar-nav li.nav-item {
+    margin-left: 9px;
+}
+.topbar .col-md-5 {
+    display: none;
+}
+.mobile-logo {
+    display: inline-block;
+    width: 134px;
+}
+.opennav .sidebar {
+    left: 0px;
+}
+.copyright-right ul li a {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.copyright-right ul {
+    text-align: center;
+}
+.copyright-left p {
+    line-height: 18px;
+}
+.topbar .col-md-7 {
+    width: 100%;
+}
+}
+
+/*320-1199*/
+
+@media all and (min-width: 320px) and (max-width: 991px) {
+
+
+}
+
+/*320-991*/
+
+
+@media all and (min-width: 320px) and (max-width: 767px) {
+.subscription-col {
+    width: 100%;
+    margin-bottom: 10px;
+}
+.subscription-col.subscription-col1 {
+    width: 100%;
+}
+.subscription-col.subscription-col4 {
+    width: 100%;
+}
+.planscard-current {
+    white-space: nowrap;
+}
+.planscard {
+    padding: 27px 20px;
+    margin-bottom: 20px;
+}
+.titleright-btn {
+    text-align: left;
+    margin-top: 12px;
+}
+.titleright-btn .btn.btn-info {
+    margin: 0px 0px 0px 0px;
+}
+.dashboardcard-list li {
+    width: 100%;
+}
+.toprow {
+    margin-bottom: 20px;
+}
+.dashboard-card {
+    margin-bottom: 20px;
+}
+.login-bg {
+    padding: 20px 20px;
+}
+.login-sec {
+    padding: 0px 15px;
+}
+.radiolist-ul li {
+    width: 100%;
+}
+.token li {
+    width: 100%;
+    margin-bottom: 15px;
+}
+.filterrow {
+    gap: 12px;
+}
+.filterlist {
+    text-align: left;
+}
+.filterlist .btn.btn-info {
+    margin: 0px 6px 6px 0px;
+}
+}
+
+/*320-767*/
+
+@media all and (min-width: 768px) and (max-width: 991px) {
+
+}
+
+/*768-991*/
+
+@media all and (min-width: 992px) and (max-width: 1024px) {
+
+}
+
+/*992-1024*/
+
+@media all and (min-width: 768px) and (max-width: 1024px) {
+.dashboardcard-list li {
+    width: 50%;
+}
+.toprow {
+    margin-bottom: 20px;
+}
+.dashboard-card {
+    margin-bottom: 20px;
+}
+.login-sec {
+    padding: 0px 20px;
+}
+.subscription-col.subscription-col4 {
+    width: 50%;
+}
+.subscription-col.subscription-col1 {
+    width: 50%;
+}
+.subscription-col {
+    width: 50%;
+    margin-top: 15px;
+}
+.planscard {
+    padding: 27px 15px;
+}
+.filterlist .btn.btn-info {
+    font-size: 13px;
+    padding: 6px 13px;
+    margin-left: 6px;
+}
+}
+
+/*768-1024*/
+
+@media all and (min-width: 1025px) and (max-width: 1199px) {
+
+}
+
+/*1025-1199*/
+
+@media all and (min-width: 1200px) and (max-width: 1280px) {
+.dashboardcard-list li {
+    width: 50%;
+}
+.dashboard-card {
+    margin-bottom: 20px;
+}
+
+}
+
+/*1200-1280*/
+@media all and (min-width: 1400px) and (max-width: 4000px) {
+
+}
+
+@media all and (min-width: 1400px) and (max-width: 1500px) {
+
+}
+
+@media all and (min-width: 1901px) and (max-width: 2300px) {
+
+}
+
+
+

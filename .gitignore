@@ -1,0 +1,16 @@
+backend/.env
+frontend/.env
+backend/node_modules/
+backend/.next/
+backend/stripe.exe
+backend/_doc_extarct.txt
+backend/docker-compose.yml
+backend/Dockerfile
+backend/.github/
+backend/.dockerignore
+backend/.gitignore
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+forntend/.env.development.local
+    
