@@ -1,6 +1,8 @@
 import pino from 'pino';
 
 const isDev = process.env['NODE_ENV'] === 'development';
+const isVercelRuntime = Boolean(process.env['VERCEL']);
+const shouldUsePrettyPrint = isDev && !isVercelRuntime && process.env['PINO_PRETTY'] !== 'false';
 
 export const logger = pino({
   level: process.env['LOG_LEVEL'] ?? 'info',
@@ -25,7 +27,7 @@ export const logger = pino({
     ],
     censor: '[REDACTED]',
   },
-  transport: isDev
+  transport: shouldUsePrettyPrint
     ? { target: 'pino-pretty', options: { colorize: true, translateTime: 'SYS:standard' } }
     : undefined,
   timestamp: pino.stdTimeFunctions.isoTime,
