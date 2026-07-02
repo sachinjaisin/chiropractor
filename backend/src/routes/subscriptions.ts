@@ -27,7 +27,7 @@ const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
 
   // GET /v1/subscriptions
   fastify.get('/', {
-    preHandler: [fastify.authenticate],
+    preHandler: [fastify.authenticate, fastify.requireRole('chiropractor')],
     schema: {
       tags: TAGS, security: SEC,
       summary:     'Get current subscription',
@@ -41,7 +41,7 @@ const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
 
   // POST /v1/subscriptions
   fastify.post('/', {
-    preHandler: [fastify.authenticate],
+    preHandler: [fastify.authenticate, fastify.requireRole('chiropractor')],
     config: { rateLimit: { max: 5, timeWindow: 60000 } },
     schema: {
       tags: TAGS, security: SEC,
@@ -87,7 +87,7 @@ const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
 
   // PATCH /v1/subscriptions
   fastify.patch('/', {
-    preHandler: [fastify.authenticate],
+    preHandler: [fastify.authenticate, fastify.requireRole('chiropractor')],
     schema: {
       tags: TAGS, security: SEC,
       summary:     'Upgrade or downgrade plan',
@@ -109,7 +109,7 @@ const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
 
   // POST /v1/subscriptions/cancel
   fastify.post('/cancel', {
-    preHandler: [fastify.authenticate],
+    preHandler: [fastify.authenticate, fastify.requireRole('chiropractor')],
     schema: {
       tags: TAGS, security: SEC,
       summary:     'Cancel subscription',
@@ -129,7 +129,7 @@ const subscriptionRoutes: FastifyPluginAsync = async (fastify) => {
 
   // GET /v1/subscriptions/billing
   fastify.get('/billing', {
-    preHandler: [fastify.authenticate],
+    preHandler: [fastify.authenticate, fastify.requireRole('chiropractor')],
     schema: {
       tags: TAGS, security: SEC,
       summary:     'Billing history',

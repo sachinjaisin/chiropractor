@@ -53,10 +53,14 @@ export class SubscriptionService {
     if (!plan) throw new NotFoundError('Subscription plan');
 
     // Get user email for Stripe
-    const [user] = await query<{ email: string }>(
+    const users = await query<{ email: string }>(
       'SELECT email FROM users WHERE id = $1',
       [userId],
     );
+    if (users.length === 0) {
+      throw new AppError(401, 'UNAUTHORIZED', 'User not found. Please log in again.');
+    }
+    const user = users[0];
 
     if (this.stripeSvc.isEnabled()) {
       try {
