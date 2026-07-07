@@ -206,8 +206,8 @@ All errors return a consistent JSON body:
 }
 
 // Specialty values:
-"Back Pain" | "Neck Pain" | "Sports Injury" | "Pregnancy" |
-"Pediatrics" | "Rehabilitation" | "Wellness Care" | "Other"
+"Back Pain" | "Neck Pain" | "Headaches/Migraine" | "Pregnancy Care" |
+"Pediatrics" | "Tinnitus" | "Wellness Care" | "Other"
 ```
 
 ---

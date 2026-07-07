@@ -54,7 +54,7 @@ async function buildServer() {
           'https://chiropractor-sage.vercel.app',
           /\.vercel\.app$/, // Allow Vercel preview deployments
         ]
-      : true,
+      : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });

@@ -52,7 +52,8 @@ export function registerErrorHandler(fastify: FastifyInstance): void {
     logger.error({ err: error, correlationId, url: request.url }, 'Unhandled error');
     return reply.status(500).send({
       code: 'INTERNAL_ERROR',
-      message: 'An unexpected error occurred',
+      message: error instanceof Error ? error.message : 'An unexpected error occurred',
+      stack: env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined
     });
   });
 }

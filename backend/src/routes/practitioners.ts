@@ -55,7 +55,7 @@ const practitionerRoutes: FastifyPluginAsync = async (fastify) => {
           areas_served:      { type: 'array', items: { type: 'string' } },
           specialties: {
             type: 'array',
-            items: { type: 'string', enum: ['Back Pain','Neck Pain','Sports Injury','Pregnancy','Pediatrics','Rehabilitation','Wellness Care','Other'] },
+            items: { type: 'string', enum: ['Back Pain','Neck Pain','Headaches/Migraine','Pregnancy Care','Pediatrics','Tinnitus','Wellness Care','Other'] },
           },
           profile_pic_url:   { type: 'string', nullable: true },
         },

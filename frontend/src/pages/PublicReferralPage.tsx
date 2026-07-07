@@ -33,8 +33,8 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>
 
 const PROBLEMS = [
-  'Back Pain', 'Neck Pain', 'Sports Injury', 'Pregnancy',
-  'Pediatrics', 'Rehabilitation', 'Wellness Care', 'Other',
+  'Back Pain', 'Neck Pain', 'Headaches/Migraine', 'Pregnancy Care',
+  'Pediatrics', 'Tinnitus', 'Wellness Care', 'Other',
 ] as const
 
 interface SuccessState {

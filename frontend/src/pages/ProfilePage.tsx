@@ -16,10 +16,10 @@ import { useExternalStylesheet } from '@/lib/useExternalStylesheet'
 const SPECIALTIES = [
   'Back Pain',
   'Neck Pain',
-  'Sports Injury',
-  'Pregnancy',
+  'Headaches/Migraine',
+  'Pregnancy Care',
   'Pediatrics',
-  'Rehabilitation',
+  'Tinnitus',
   'Wellness Care',
   'Other',
 ] as const

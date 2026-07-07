@@ -70,8 +70,8 @@ export const PractitionerStatusEnum = {
 
 export const SpecialtyEnum = {
   type: 'string',
-  enum: ['Back Pain','Neck Pain','Sports Injury','Pregnancy','Pediatrics',
-         'Rehabilitation','Wellness Care','Other'],
+  enum: ['Back Pain','Neck Pain','Headaches/Migraine','Pregnancy Care','Pediatrics',
+         'Tinnitus','Wellness Care','Other'],
 } as const;
 
 export const PractitionerProfileSchema = {

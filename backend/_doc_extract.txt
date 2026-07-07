@@ -88,10 +88,10 @@ Specialties
 Multi-select:
 Back Pain
 Neck Pain
-Sports Injury
-Pregnancy
+Headaches/Migraine
+Pregnancy Care
 Pediatrics
-Rehabilitation
+Tinnitus
 Wellness Care
 Other
 System Actions
