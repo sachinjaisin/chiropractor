@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyError } from 'fastify';
 import { ZodError } from 'zod';
 import { AppError, isAppError } from '../utils/errors';
 import { logger } from '../config/logger';
+import { env } from '../config/env';
 
 export function registerErrorHandler(fastify: FastifyInstance): void {
   fastify.setErrorHandler((error: FastifyError | AppError | ZodError | Error, request, reply) => {
