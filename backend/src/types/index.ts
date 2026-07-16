@@ -176,8 +176,8 @@ export interface SubscriptionRow {
   id: string;
   practitioner_id: string;
   plan_id: string;
-  stripe_subscription_id: string;
-  stripe_customer_id: string;
+  stripe_subscription_id: string | null;
+  stripe_customer_id: string | null;
   status: SubscriptionStatus;
   current_period_start: Date;
   current_period_end: Date;

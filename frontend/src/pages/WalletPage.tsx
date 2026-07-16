@@ -88,7 +88,7 @@ const getStatusClass = (type: Transaction['transaction_type']): string => {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function WalletPage() {
-  const { user } = useAuth()
+  const { user, systemConfig } = useAuth()
 
   useExternalStylesheet(['https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css'])
 
@@ -391,43 +391,45 @@ export default function WalletPage() {
       </div>
 
       {/* Purchase Tokens */}
-      <div className="carddesign">
-        <div className="cardheading">
-          <h2>Token Purchase</h2>
+      {!systemConfig.token_buying_disabled && (
+        <div className="carddesign">
+          <div className="cardheading">
+            <h2>Token Purchase</h2>
+          </div>
+          <div className="cardbody">
+            {packagesLoading ? (
+              <div className="text-center py-5">
+                <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
+              </div>
+            ) : packages.length === 0 ? (
+              <p className="text-secondary text-sm">No packages available at this time.</p>
+            ) : (
+              <ul className="token">
+                {packages.map((pkg) => (
+                  <li key={pkg.id}>
+                    <div className="tokenlist">
+                      <span className="tokeniimg">
+                        <img src="/assets/images/token.png" className="img-fluid" alt="" />
+                      </span>
+                      <h3>
+                        {pkg.token_count} <span>Tokens</span>
+                      </h3>
+                      <h4>{formatPrice(pkg.price_cents)}</h4>
+                      <button
+                        onClick={() => handleBuyNow(pkg.id)}
+                        disabled={redirectingPkgId !== null}
+                        className="btn btn-info"
+                      >
+                        {redirectingPkgId === pkg.id ? 'Redirecting...' : 'Buy Now'}
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
-        <div className="cardbody">
-          {packagesLoading ? (
-            <div className="text-center py-5">
-              <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
-            </div>
-          ) : packages.length === 0 ? (
-            <p className="text-secondary text-sm">No packages available at this time.</p>
-          ) : (
-            <ul className="token">
-              {packages.map((pkg) => (
-                <li key={pkg.id}>
-                  <div className="tokenlist">
-                    <span className="tokeniimg">
-                      <img src="/assets/images/token.png" className="img-fluid" alt="" />
-                    </span>
-                    <h3>
-                      {pkg.token_count} <span>Tokens</span>
-                    </h3>
-                    <h4>{formatPrice(pkg.price_cents)}</h4>
-                    <button
-                      onClick={() => handleBuyNow(pkg.id)}
-                      disabled={redirectingPkgId !== null}
-                      className="btn btn-info"
-                    >
-                      {redirectingPkgId === pkg.id ? 'Redirecting...' : 'Buy Now'}
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
+      )}
 
       {/* Transaction History */}
       <div className="carddesign mt-4">

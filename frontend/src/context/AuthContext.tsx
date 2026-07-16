@@ -12,11 +12,17 @@ interface User {
   rejection_reason?: string
   profile_pic_url?: string | null
 }
+interface SystemConfig {
+  subscription_system_disabled: boolean
+  token_buying_disabled: boolean
+}
+
 interface AuthContextValue {
   user: User | null
   accessToken: string | null
   isLoading: boolean
   walletBalance: number | null
+  systemConfig: SystemConfig
   login: (email: string, password: string) => Promise<User>
   logout: () => Promise<void>
   setUser: (u: User | null) => void
@@ -31,6 +37,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [accessToken, setTokenState] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [systemConfig, setSystemConfig] = useState<SystemConfig>({
+    subscription_system_disabled: false,
+    token_buying_disabled: false,
+  })
 
   function setToken(t: string | null) {
     setTokenState(t)
@@ -61,6 +71,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user])
 
   useEffect(() => {
+    // Fetch public configurations
+    api.get('/public/config')
+      .then(({ data }) => setSystemConfig(data))
+      .catch((err) => console.error('Failed to load system config:', err))
+
     // Attempt silent refresh on mount
     api.post('/auth/refresh')
       .then(({ data }) => {
@@ -126,6 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         accessToken,
         isLoading,
         walletBalance,
+        systemConfig,
         login,
         logout,
         setUser,

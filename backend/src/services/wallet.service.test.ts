@@ -54,6 +54,16 @@ describe('WalletService', () => {
         expect.stringContaining('SELECT id, token_count, price_cents, stripe_price_id, sort_order FROM token_packages'),
       );
     });
+
+    it('should return empty packages list if buying is disabled in settings', async () => {
+      (queryOne as jest.Mock).mockResolvedValue({ value: true });
+
+      const result = await service.listPackages();
+      expect(result).toEqual({ data: [] });
+      expect(queryOne).toHaveBeenCalledWith(
+        expect.stringContaining("SELECT value FROM system_settings WHERE key = 'token.buying_disabled'"),
+      );
+    });
   });
 
   describe('expireTokens', () => {

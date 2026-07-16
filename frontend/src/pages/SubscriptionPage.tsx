@@ -54,7 +54,7 @@ function formatDate(iso: string): string {
 // ─── Page Component ───────────────────────────────────────────────────────────
 
 export default function SubscriptionPage() {
-  const { user, walletBalance } = useAuth()
+  const { user, walletBalance, systemConfig } = useAuth()
 
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [subLoading, setSubLoading] = useState(true)
@@ -230,7 +230,11 @@ export default function SubscriptionPage() {
                         {formatPrice(subscription.monthly_price_cents ?? 0)}{' '}
                         <span>/month</span>
                       </h4>
-                      <p>Includes {subscription.included_tokens} tokens / renewal</p>
+                      <p>
+                        {subscription.plan_name === 'Free'
+                          ? `Includes ${subscription.included_tokens} tokens / 12 months`
+                          : `Includes ${subscription.included_tokens} tokens / renewal`}
+                      </p>
                     </div>
                   </div>
                   <div className="subscription-col">
@@ -249,6 +253,8 @@ export default function SubscriptionPage() {
                       <p>
                         {subscription.status === 'EXPIRED'
                           ? 'Your subscription/free trial has expired.'
+                          : subscription.plan_name === 'Free'
+                          ? 'Your free plan will expire after the 12-month period.'
                           : subscription.cancelled_at
                           ? 'Your subscription is pending cancellation.'
                           : 'Your subscription will renew automatically.'}
@@ -269,7 +275,7 @@ export default function SubscriptionPage() {
                   </div>
                   <div className="subscription-col subscription-col4">
                     <div className="subscription-design">
-                      {!subscription.cancelled_at && subscription.status !== 'EXPIRED' && (
+                      {!subscription.cancelled_at && subscription.status !== 'EXPIRED' && subscription.plan_name !== 'Free' && (
                         <button
                           onClick={handleCancelSub}
                           disabled={isActionLoading}
@@ -311,7 +317,8 @@ export default function SubscriptionPage() {
       )}
 
       {/* Available Plans */}
-      <div className="carddesign mt-4">
+      {!systemConfig.subscription_system_disabled && (
+        <div className="carddesign mt-4">
         <div className="cardheading">
           <h2>
             Available Plans{' '}
@@ -398,9 +405,11 @@ export default function SubscriptionPage() {
           )}
         </div>
       </div>
+      )}
 
       {/* Billing & Invoices */}
-      <div className="carddesign mt-4">
+      {!systemConfig.subscription_system_disabled && (
+        <div className="carddesign mt-4">
         <div className="cardheading">
           <h2>Billing & Invoices</h2>
         </div>
@@ -469,6 +478,7 @@ export default function SubscriptionPage() {
           )}
         </div>
       </div>
+      )}
     </DashboardShell>
   )
 }

@@ -152,6 +152,36 @@ Supply \`Idempotency-Key\` to prevent duplicate submissions on network retry.`,
 
     return reply.status(201).send({ success: true });
   });
+
+  // GET /v1/public/config
+  fastify.get('/config', {
+    schema: {
+      tags:     ['Public'],
+      security: [],
+      summary:     'Get system configurations',
+      description: 'Returns general settings like whether subscriptions or token buying is disabled.',
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            subscription_system_disabled: { type: 'boolean' },
+            token_buying_disabled:        { type: 'boolean' },
+          },
+          required: ['subscription_system_disabled', 'token_buying_disabled'],
+        },
+      },
+    },
+  }, async () => {
+    const settings = await query<{ key: string; value: any }>(
+      `SELECT key, value FROM system_settings WHERE key IN ('subscription.system_disabled', 'token.buying_disabled')`
+    );
+    const subDisabled = settings.find(s => s.key === 'subscription.system_disabled')?.value === true;
+    const tokenDisabled = settings.find(s => s.key === 'token.buying_disabled')?.value === true;
+    return {
+      subscription_system_disabled: subDisabled,
+      token_buying_disabled: tokenDisabled,
+    };
+  });
 };
 
 export default publicRoutes;

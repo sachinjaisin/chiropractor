@@ -65,6 +65,13 @@ export class WalletService {
 
   /** List available token packages */
   async listPackages(): Promise<{ data: TokenPackage[] }> {
+    const disabledSetting = await queryOne<{ value: any }>(
+      `SELECT value FROM system_settings WHERE key = 'token.buying_disabled'`
+    );
+    if (disabledSetting && disabledSetting.value === true) {
+      return { data: [] };
+    }
+
     const packages = await query<TokenPackage>(
       `SELECT id, token_count, price_cents, stripe_price_id, sort_order FROM token_packages WHERE is_active = TRUE ORDER BY sort_order ASC`,
     );
@@ -78,6 +85,13 @@ export class WalletService {
     successUrl: string,
     cancelUrl: string,
   ): Promise<{ checkout_url: string }> {
+    const disabledSetting = await queryOne<{ value: any }>(
+      `SELECT value FROM system_settings WHERE key = 'token.buying_disabled'`
+    );
+    if (disabledSetting && disabledSetting.value === true) {
+      throw new AppError(403, 'FORBIDDEN', 'Token purchases are currently disabled.');
+    }
+
     // Fetch package details
     const pkg = await queryOne<TokenPackage>(
       `SELECT id, token_count, price_cents, stripe_price_id FROM token_packages WHERE id = $1 AND is_active = TRUE`,

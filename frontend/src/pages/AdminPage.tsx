@@ -3047,7 +3047,12 @@ export default function AdminPage() {
                   <button
                     onClick={() => {
                       const updates = Object.fromEntries(
-                        Object.entries(settings).map(([k, s]) => [k, s.value])
+                        Object.entries(settings).map(([k, s]) => {
+                          let val = s.value;
+                          if (val === 'true') val = true;
+                          if (val === 'false') val = false;
+                          return [k, val];
+                        })
                       )
                       saveSettings(updates)
                     }}

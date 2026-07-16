@@ -10,6 +10,13 @@ export class SubscriptionService {
   private stripeSvc = new StripeService();
 
   async listPlans() {
+    const disabledSetting = await queryOne<{ value: any }>(
+      `SELECT value FROM system_settings WHERE key = 'subscription.system_disabled'`
+    );
+    if (disabledSetting && disabledSetting.value === true) {
+      return { data: [] };
+    }
+
     const plans = await query<SubscriptionPlanRow>(
       `SELECT id, name, description, monthly_price_cents, included_tokens, sort_order
        FROM subscription_plans WHERE is_active = TRUE ORDER BY sort_order ASC`,
@@ -40,6 +47,13 @@ export class SubscriptionService {
     successUrl: string,
     cancelUrl: string,
   ): Promise<{ checkout_url: string }> {
+    const disabledSetting = await queryOne<{ value: any }>(
+      `SELECT value FROM system_settings WHERE key = 'subscription.system_disabled'`
+    );
+    if (disabledSetting && disabledSetting.value === true) {
+      throw new AppError(403, 'FORBIDDEN', 'Subscription system is currently disabled.');
+    }
+
     const existingSub = await queryOne<SubscriptionRow>(
       `SELECT id FROM subscriptions WHERE practitioner_id = $1 AND status = 'ACTIVE'`,
       [practitionerId],
@@ -211,6 +225,13 @@ export class SubscriptionService {
   }
 
   async changePlan(practitionerId: string, newPlanId: string) {
+    const disabledSetting = await queryOne<{ value: any }>(
+      `SELECT value FROM system_settings WHERE key = 'subscription.system_disabled'`
+    );
+    if (disabledSetting && disabledSetting.value === true) {
+      throw new AppError(403, 'FORBIDDEN', 'Subscription system is currently disabled.');
+    }
+
     const existing = await queryOne<SubscriptionRow>(
       `SELECT s.*, sp.stripe_price_id AS old_price_id
        FROM subscriptions s
@@ -226,7 +247,7 @@ export class SubscriptionService {
     );
     if (!newPlan) throw new NotFoundError('Plan');
 
-    if (this.stripeSvc.isEnabled()) {
+    if (this.stripeSvc.isEnabled() && existing.stripe_subscription_id) {
       await this.stripeSvc.updateSubscription(
         existing.stripe_subscription_id,
         newPlan.stripe_price_id,
@@ -242,13 +263,20 @@ export class SubscriptionService {
   }
 
   async cancel(practitionerId: string): Promise<void> {
+    const disabledSetting = await queryOne<{ value: any }>(
+      `SELECT value FROM system_settings WHERE key = 'subscription.system_disabled'`
+    );
+    if (disabledSetting && disabledSetting.value === true) {
+      throw new AppError(403, 'FORBIDDEN', 'Subscription system is currently disabled.');
+    }
+
     const sub = await queryOne<SubscriptionRow>(
       `SELECT * FROM subscriptions WHERE practitioner_id = $1 AND status = 'ACTIVE'`,
       [practitionerId],
     );
     if (!sub) throw new NotFoundError('Active subscription');
 
-    if (this.stripeSvc.isEnabled()) {
+    if (this.stripeSvc.isEnabled() && sub.stripe_subscription_id) {
       await this.stripeSvc.cancelSubscription(sub.stripe_subscription_id);
     }
     await query(
@@ -279,6 +307,13 @@ export class SubscriptionService {
   }
 
   async getBillingHistory(practitionerId: string) {
+    const disabledSetting = await queryOne<{ value: any }>(
+      `SELECT value FROM system_settings WHERE key = 'subscription.system_disabled'`
+    );
+    if (disabledSetting && disabledSetting.value === true) {
+      return { data: [] };
+    }
+
     const sub = await queryOne<SubscriptionRow>(
       `SELECT stripe_customer_id FROM subscriptions WHERE practitioner_id = $1
        ORDER BY created_at DESC LIMIT 1`,
@@ -286,7 +321,7 @@ export class SubscriptionService {
     );
     if (!sub) return { data: [] };
 
-    if (!this.stripeSvc.isEnabled() || sub.stripe_customer_id.startsWith('mock_')) {
+    if (!this.stripeSvc.isEnabled() || !sub.stripe_customer_id || sub.stripe_customer_id.startsWith('mock_')) {
       return { data: [] };
     }
 

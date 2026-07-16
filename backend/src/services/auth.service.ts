@@ -68,6 +68,35 @@ export class AuthService {
         [practitioner.id],
       );
 
+      // Auto-subscribe to the Free plan (4 tokens for 12 months)
+      const [freePlan] = await client.query<{ id: string; included_tokens: number }>(
+        `SELECT id, included_tokens FROM subscription_plans WHERE name = 'Free' AND is_active = TRUE LIMIT 1`
+      ).then(r => r.rows);
+
+      if (freePlan) {
+        const periodEnd = new Date();
+        periodEnd.setFullYear(periodEnd.getFullYear() + 1); // 12 months (1 year)
+        
+        await client.query(
+          `INSERT INTO subscriptions (practitioner_id, plan_id, stripe_subscription_id, stripe_customer_id, status, current_period_start, current_period_end)
+           VALUES ($1, $2, NULL, NULL, 'ACTIVE', NOW(), $3)`,
+          [practitioner.id, freePlan.id, periodEnd]
+        );
+
+        // Allocate the tokens to the wallet
+        const [wallet] = await client.query(
+          `UPDATE token_wallets SET balance = balance + $1, total_allocated = total_allocated + $1, updated_at = NOW() WHERE practitioner_id = $2 RETURNING id, balance`,
+          [freePlan.included_tokens, practitioner.id]
+        ).then(r => r.rows);
+
+        // Insert token transaction
+        await client.query(
+          `INSERT INTO token_transactions (wallet_id, practitioner_id, transaction_type, amount, balance_after, notes)
+           VALUES ($1, $2, 'MONTHLY_ALLOCATION', $3, $4, $5)`,
+          [wallet.id, practitioner.id, freePlan.included_tokens, wallet.balance, `Initial Free Plan allocation of ${freePlan.included_tokens} tokens`]
+        );
+      }
+
       await this.audit.log(client, {
         user_id:     user.id,
         action:      'REGISTER',
