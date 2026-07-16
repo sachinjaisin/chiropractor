@@ -1318,8 +1318,12 @@ export class AdminService {
     is_active?: boolean;
     sort_order?: number;
   }, adminUserId: string) {
-    const plan = await queryOne('SELECT * FROM subscription_plans WHERE id = $1', [id]);
+    const plan = await queryOne<{ name: string; is_active: boolean }>('SELECT name, is_active FROM subscription_plans WHERE id = $1', [id]);
     if (!plan) throw new NotFoundError('Subscription plan');
+
+    if (plan.name === 'Free' && data.is_active === false) {
+      throw new AppError(400, 'VALIDATION_ERROR', 'The Free subscription plan cannot be deactivated.');
+    }
 
     const sets: string[] = [];
     const params: unknown[] = [];

@@ -115,4 +115,26 @@ describe('AdminService Subscription Management', () => {
       );
     });
   });
+
+  describe('updatePlan', () => {
+    it('should throw AppError if attempting to deactivate the Free subscription plan', async () => {
+      const { queryOne } = require('../config/database');
+      (queryOne as jest.Mock).mockResolvedValue({ name: 'Free', is_active: true });
+
+      const { AppError } = require('../utils/errors');
+      await expect(
+        service.updatePlan('free-plan-id', { is_active: false }, 'admin-user')
+      ).rejects.toThrow(AppError);
+    });
+
+    it('should allow other updates to the Free plan', async () => {
+      const { queryOne } = require('../config/database');
+      (queryOne as jest.Mock)
+        .mockResolvedValueOnce({ name: 'Free', is_active: true })
+        .mockResolvedValueOnce({ id: 'free-plan-id', name: 'Free', description: 'Updated Free plan' });
+
+      const result = await service.updatePlan('free-plan-id', { description: 'Updated Free plan' }, 'admin-user');
+      expect(result.description).toBe('Updated Free plan');
+    });
+  });
 });
