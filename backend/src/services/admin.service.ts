@@ -1318,11 +1318,22 @@ export class AdminService {
     is_active?: boolean;
     sort_order?: number;
   }, adminUserId: string) {
-    const plan = await queryOne<{ name: string; is_active: boolean }>('SELECT name, is_active FROM subscription_plans WHERE id = $1', [id]);
+    const plan = await queryOne<any>('SELECT * FROM subscription_plans WHERE id = $1', [id]);
     if (!plan) throw new NotFoundError('Subscription plan');
 
-    if (plan.name === 'Free' && data.is_active === false) {
-      throw new AppError(400, 'VALIDATION_ERROR', 'The Free subscription plan cannot be deactivated.');
+    if (plan.name === 'Free') {
+      if (data.is_active === false) {
+        throw new AppError(400, 'VALIDATION_ERROR', 'The Free subscription plan cannot be deactivated.');
+      }
+      if (
+        (data.name !== undefined && data.name !== plan.name) ||
+        (data.description !== undefined && data.description !== plan.description) ||
+        (data.monthly_price_cents !== undefined && data.monthly_price_cents !== plan.monthly_price_cents) ||
+        (data.stripe_price_id !== undefined && data.stripe_price_id !== plan.stripe_price_id) ||
+        (data.sort_order !== undefined && data.sort_order !== plan.sort_order)
+      ) {
+        throw new AppError(400, 'VALIDATION_ERROR', 'Only the included tokens can be edited in the Free plan.');
+      }
     }
 
     const sets: string[] = [];

@@ -3290,6 +3290,7 @@ export default function AdminPage() {
                         className="form-control text-sm"
                         placeholder="e.g. Starter, Premium"
                         value={planForm.name}
+                        disabled={selectedPlan?.name === 'Free'}
                         onChange={e => setPlanForm(prev => ({ ...prev, name: e.target.value }))}
                       />
                     </div>
@@ -3299,11 +3300,12 @@ export default function AdminPage() {
                         className="form-control text-sm h-16 resize-none"
                         placeholder="Plan features summary..."
                         value={planForm.description}
+                        disabled={selectedPlan?.name === 'Free'}
                         onChange={e => setPlanForm(prev => ({ ...prev, description: e.target.value }))}
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                      <div>
+                       <div>
                         <label className="block text-xs font-semibold text-gray-500 mb-1">Monthly Price ($) *</label>
                         <input
                           type="number"
@@ -3311,7 +3313,8 @@ export default function AdminPage() {
                           min="0"
                           className="form-control text-sm"
                           placeholder="49.00"
-                          value={planForm.monthly_price_cents ? planForm.monthly_price_cents / 100 : ''}
+                          value={planForm.monthly_price_cents !== undefined && planForm.monthly_price_cents !== null ? planForm.monthly_price_cents / 100 : ''}
+                          disabled={selectedPlan?.name === 'Free'}
                           onChange={e => {
                             const dollars = parseFloat(e.target.value) || 0;
                             setPlanForm(prev => ({ ...prev, monthly_price_cents: Math.round(dollars * 100) }));
@@ -3337,6 +3340,7 @@ export default function AdminPage() {
                         className="form-control text-sm font-mono"
                         placeholder="price_..."
                         value={planForm.stripe_price_id}
+                        disabled={selectedPlan?.name === 'Free'}
                         onChange={e => setPlanForm(prev => ({ ...prev, stripe_price_id: e.target.value }))}
                       />
                       <span className="text-[10px] text-gray-400 mt-0.5 block">
@@ -3348,6 +3352,7 @@ export default function AdminPage() {
                         <input
                           type="checkbox"
                           checked={planForm.is_active}
+                          disabled={selectedPlan?.name === 'Free'}
                           onChange={e => setPlanForm(prev => ({ ...prev, is_active: e.target.checked }))}
                         />
                         Plan Active
@@ -3358,6 +3363,7 @@ export default function AdminPage() {
                           type="number"
                           className="form-control text-xs py-1"
                           value={planForm.sort_order}
+                          disabled={selectedPlan?.name === 'Free'}
                           onChange={e => setPlanForm(prev => ({ ...prev, sort_order: parseInt(e.target.value, 10) || 0 }))}
                         />
                       </div>

@@ -127,14 +127,14 @@ describe('AdminService Subscription Management', () => {
       ).rejects.toThrow(AppError);
     });
 
-    it('should allow other updates to the Free plan', async () => {
+    it('should allow updates to included_tokens on the Free plan', async () => {
       const { queryOne } = require('../config/database');
       (queryOne as jest.Mock)
-        .mockResolvedValueOnce({ name: 'Free', is_active: true })
-        .mockResolvedValueOnce({ id: 'free-plan-id', name: 'Free', description: 'Updated Free plan' });
+        .mockResolvedValueOnce({ name: 'Free', is_active: true, included_tokens: 4 })
+        .mockResolvedValueOnce({ id: 'free-plan-id', name: 'Free', included_tokens: 10 });
 
-      const result = await service.updatePlan('free-plan-id', { description: 'Updated Free plan' }, 'admin-user');
-      expect(result.description).toBe('Updated Free plan');
+      const result = await service.updatePlan('free-plan-id', { included_tokens: 10 }, 'admin-user');
+      expect(result.included_tokens).toBe(10);
     });
   });
 });
