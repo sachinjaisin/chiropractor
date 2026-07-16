@@ -3348,9 +3348,10 @@ export default function AdminPage() {
                       </span>
                     </div>
                     <div className="grid grid-cols-2 gap-3 pt-2">
-                      <label className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
+                      <label className={`flex items-center gap-2 text-xs text-gray-700 ${selectedPlan?.name === 'Free' ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}>
                         <input
                           type="checkbox"
+                          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                           checked={planForm.is_active}
                           disabled={selectedPlan?.name === 'Free'}
                           onChange={e => setPlanForm(prev => ({ ...prev, is_active: e.target.checked }))}
@@ -3643,6 +3644,7 @@ export default function AdminPage() {
                       <label className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer">
                         <input
                           type="checkbox"
+                          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                           checked={packageForm.is_active}
                           onChange={e => setPackageForm(prev => ({ ...prev, is_active: e.target.checked }))}
                         />
