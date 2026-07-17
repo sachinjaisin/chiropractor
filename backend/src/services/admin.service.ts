@@ -271,6 +271,81 @@ export class AdminService {
     });
   }
 
+  async updatePractitionerStatus(
+    practitionerId: string,
+    newStatus: string,
+    adminUserId: string,
+    reason?: string
+  ): Promise<void> {
+    const validStatuses = [
+      'PENDING_PROFILE',
+      'PROFILE_COMPLETED',
+      'PENDING_APPROVAL',
+      'ACTIVE',
+      'REJECTED',
+      'SUSPENDED',
+    ];
+    if (!validStatuses.includes(newStatus)) {
+      throw new Error(`Invalid status: ${newStatus}`);
+    }
+
+    const practitioner = await queryOne<{ id: string; status: string; user_id: string }>(
+      'SELECT id, status, user_id FROM practitioners WHERE id = $1',
+      [practitionerId],
+    );
+    if (!practitioner) throw new NotFoundError('Practitioner');
+
+    await withTransaction(async (client) => {
+      if (newStatus === 'SUSPENDED') {
+        await client.query(
+          `UPDATE practitioners SET status = $2, suspended_at = NOW(), suspended_by = $3, suspension_note = $4 WHERE id = $1`,
+          [practitionerId, newStatus, adminUserId, reason || null],
+        );
+      } else {
+        await client.query(
+          `UPDATE practitioners SET status = $2, suspended_at = NULL, suspended_by = NULL, suspension_note = NULL WHERE id = $1`,
+          [practitionerId, newStatus],
+        );
+      }
+      await client.query(
+        `INSERT INTO practitioner_status_history (practitioner_id, old_status, new_status, changed_by, reason)
+         VALUES ($1,$2,$3,$4,$5)`,
+        [practitionerId, practitioner.status, newStatus, adminUserId, reason || null],
+      );
+    });
+
+    await this.audit.log(null, {
+      user_id:     adminUserId,
+      action:      'UPDATE_PRACTITIONER_STATUS',
+      entity_type: 'practitioner',
+      entity_id:   practitionerId,
+      new_value:   { status: newStatus, reason },
+    });
+
+    // Send email notifications if appropriate
+    if (newStatus === 'ACTIVE') {
+      await emailQueue.add('send-approval-status', {
+        practitioner_id: practitionerId,
+        status:          'APPROVED',
+      });
+      matchPractitionerWithOpenReferrals(practitionerId).catch(err => {
+        logger.error({ err, practitionerId }, 'Failed to match newly activated practitioner with open referrals');
+      });
+    } else if (newStatus === 'REJECTED') {
+      await emailQueue.add('send-approval-status', {
+        practitioner_id: practitionerId,
+        status:          'REJECTED',
+        reason:          reason || 'Direct status override by admin',
+      });
+    } else if (newStatus === 'SUSPENDED') {
+      await emailQueue.add('send-user-action', {
+        user_id: practitioner.user_id,
+        action:  'SUSPENDED',
+        reason:  reason || 'Direct status override by admin',
+      });
+    }
+  }
+
   async issuePractitionerWarning(practitionerId: string, adminUserId: string, reason: string): Promise<void> {
     await withTransaction(async (client) => {
       await client.query(

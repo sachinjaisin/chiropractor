@@ -215,6 +215,34 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
     return reply.send({ message: 'Practitioner reactivated' });
   });
 
+  fastify.post('/practitioners/:id/status', {
+    schema: {
+      tags: TAGS, security: SEC,
+      summary: 'Update practitioner status directly (admin override)',
+      params: { type: 'object', required: ['id'], properties: { id: { type: 'string', format: 'uuid' } } },
+      body: {
+        type: 'object',
+        required: ['status'],
+        properties: {
+          status: { type: 'string', enum: ['PENDING_PROFILE','PROFILE_COMPLETED','PENDING_APPROVAL','ACTIVE','REJECTED','SUSPENDED'] },
+          reason: { type: 'string', nullable: true },
+        },
+      },
+      response: {
+        200: { type: 'object', properties: { message: { type: 'string' } } },
+      },
+    },
+  }, async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const { status, reason } = z.object({
+      status: z.enum(['PENDING_PROFILE','PROFILE_COMPLETED','PENDING_APPROVAL','ACTIVE','REJECTED','SUSPENDED']),
+      reason: z.string().optional(),
+    }).parse(req.body);
+
+    await adminSvc.updatePractitionerStatus(id, status, req.currentUser.sub, reason);
+    return reply.send({ message: 'Practitioner status updated successfully' });
+  });
+
   fastify.post('/practitioners/:id/warn', {
     schema: {
       tags: TAGS, security: SEC,

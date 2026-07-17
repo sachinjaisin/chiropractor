@@ -2125,6 +2125,79 @@ export default function AdminPage() {
                                           </div>
                                         </div>
 
+                                        {/* Status Override Management */}
+                                        <div className="border border-gray-200 bg-white rounded-xl p-4 mt-2">
+                                          <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                                            <Sliders className="w-4 h-4 text-primary-500" />
+                                            Status Override Management
+                                          </h4>
+                                          <div className="flex flex-wrap items-center gap-3">
+                                            <div className="flex-grow-0 min-w-[240px]">
+                                              <select
+                                                className="form-select form-select-sm text-sm"
+                                                style={{
+                                                  padding: '8px 12px',
+                                                  borderRadius: '8px',
+                                                  border: '1px solid #cedcef',
+                                                  fontSize: '14px',
+                                                  width: '100%'
+                                                }}
+                                                value={p.status}
+                                                onChange={async (e) => {
+                                                  const newStatus = e.target.value
+                                                  if (newStatus === p.status) return
+                                                  let reason = ''
+                                                  if (['SUSPENDED', 'REJECTED'].includes(newStatus)) {
+                                                    reason = window.prompt(`Please enter a reason for status change to ${newStatus}:`) || ''
+                                                    if (!reason.trim()) {
+                                                      toast.error('A reason is required to suspend or reject.')
+                                                      return
+                                                    }
+                                                  }
+                                                  if (!window.confirm(`Are you sure you want to change status from "${p.status}" to "${newStatus}"?`)) return
+                                                  
+                                                  setActionLoading(p.id + ':status-override')
+                                                  try {
+                                                    await api.post(`/admin/practitioners/${p.id}/status`, { status: newStatus, reason })
+                                                    toast.success(`Practitioner status changed to ${newStatus}`)
+                                                    
+                                                    // Update local states
+                                                    setPractitioners(prev => prev.map(item => item.id === p.id ? { ...item, status: newStatus } : item))
+                                                    setDetailCache(prev => {
+                                                      if (!prev[p.id]) return prev
+                                                      return {
+                                                        ...prev,
+                                                        [p.id]: {
+                                                          ...prev[p.id],
+                                                          practitioner: {
+                                                            ...prev[p.id].practitioner,
+                                                            status: newStatus
+                                                          }
+                                                        }
+                                                      }
+                                                    })
+                                                  } catch (err) {
+                                                    toast.error(getApiError(err))
+                                                  } finally {
+                                                    setActionLoading(null)
+                                                  }
+                                                }}
+                                                disabled={!!actionLoading}
+                                              >
+                                                <option value="PENDING_PROFILE">Pending Profile (PENDING_PROFILE)</option>
+                                                <option value="PROFILE_COMPLETED">Profile Completed (PROFILE_COMPLETED)</option>
+                                                <option value="PENDING_APPROVAL">Pending Approval (PENDING_APPROVAL)</option>
+                                                <option value="ACTIVE">Active (ACTIVE)</option>
+                                                <option value="REJECTED">Rejected (REJECTED)</option>
+                                                <option value="SUSPENDED">Suspended (SUSPENDED)</option>
+                                              </select>
+                                            </div>
+                                            <p className="text-xs text-gray-500 flex-1">
+                                              Directly override the chiropractor's status. Changing status to ACTIVE will trigger patient matching.
+                                            </p>
+                                          </div>
+                                        </div>
+
                                         <div>
                                           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Documents</p>
                                           {detail.documents.length === 0 ? (
