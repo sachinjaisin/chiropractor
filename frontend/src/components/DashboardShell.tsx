@@ -130,14 +130,19 @@ export default function DashboardShell({
                     </Link>
                   </div>
                   <ul className="navbar-nav ms-auto flex-row align-items-center">
-                    {!systemConfig.token_buying_disabled && (
-                      <li className="nav-item upgrade-nav">
+                    <li className="nav-item upgrade-nav">
+                      {systemConfig.token_buying_disabled ? (
+                        <span className="nav-link" style={{ cursor: 'default' }}>
+                          <i className="la la-star"></i>
+                          {walletBalance !== null ? `${walletBalance} Tokens` : '0 Tokens'}
+                        </span>
+                      ) : (
                         <Link className="nav-link" to="/wallet">
                           <i className="la la-star"></i>
                           {walletBalance !== null ? `${walletBalance} Tokens` : '0 Tokens'}
                         </Link>
-                      </li>
-                    )}
+                      )}
+                    </li>
                     <li
                       className={`nav-item dropdown notifications ${notifsDropdownOpen ? 'show' : ''}`}
                       style={{ position: 'relative' }}
