@@ -855,17 +855,26 @@ export class AdminService {
 
   async editUser(
     userId: string,
-    input: { first_name?: string; last_name?: string; email?: string; phone?: string | null; role?: string },
+    input: { first_name?: string; last_name?: string; email?: string; phone?: string | null; role?: string; is_active?: boolean },
     adminUserId: string,
   ): Promise<void> {
-    const user = await queryOne('SELECT * FROM users WHERE id = $1', [userId]);
+    const user = await queryOne<{ id: string; is_active: boolean }>('SELECT id, is_active FROM users WHERE id = $1', [userId]);
     if (!user) throw new NotFoundError('User');
+
+    // Handle is_active changes if provided and changed
+    if (input.is_active !== undefined && input.is_active !== user.is_active) {
+      if (input.is_active === false) {
+        await this.disableUser(userId, adminUserId);
+      } else {
+        await this.reactivateUser(userId, adminUserId);
+      }
+    }
 
     const sets: string[] = [];
     const params: unknown[] = [];
     let idx = 1;
 
-    const fields: (keyof typeof input)[] = ['first_name', 'last_name', 'email', 'phone', 'role'];
+    const fields: ('first_name' | 'last_name' | 'email' | 'phone' | 'role')[] = ['first_name', 'last_name', 'email', 'phone', 'role'];
     for (const field of fields) {
       if (input[field] !== undefined) {
         sets.push(`${field} = $${idx++}`);
@@ -873,10 +882,10 @@ export class AdminService {
       }
     }
 
-    if (sets.length === 0) return;
-
-    params.push(userId);
-    await query(`UPDATE users SET ${sets.join(', ')}, updated_at = NOW() WHERE id = $${idx}`, params);
+    if (sets.length > 0) {
+      params.push(userId);
+      await query(`UPDATE users SET ${sets.join(', ')}, updated_at = NOW() WHERE id = $${idx}`, params);
+    }
 
     await this.audit.log(null, {
       user_id: adminUserId,
@@ -885,7 +894,7 @@ export class AdminService {
       entity_id: userId,
       new_value: input,
     });
-    await emailQueue.add('send-user-action', { user_id: userId, action: 'EDITED', changed_fields: fields });
+    await emailQueue.add('send-user-action', { user_id: userId, action: 'EDITED', changed_fields: [...fields, 'is_active'] });
   }
 
   async requestPractitionerInfo(practitionerId: string, message: string, adminUserId: string): Promise<void> {

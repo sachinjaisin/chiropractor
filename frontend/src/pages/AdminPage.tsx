@@ -317,7 +317,7 @@ export default function AdminPage() {
 
   // Modals & Forms States
   const [editUserTarget, setEditUserTarget] = useState<AdminUser | null>(null)
-  const [editUserForm, setEditUserForm] = useState({ first_name: '', last_name: '', email: '', phone: '', role: '' })
+  const [editUserForm, setEditUserForm] = useState({ first_name: '', last_name: '', email: '', phone: '', role: '', is_active: true })
   
   const [infoRequestTarget, setInfoRequestTarget] = useState<string | null>(null)
   const [infoRequestMessage, setInfoRequestMessage] = useState('')
@@ -2514,6 +2514,7 @@ export default function AdminPage() {
                                           email: u.email,
                                           phone: u.phone || '',
                                           role: u.role,
+                                          is_active: u.is_active,
                                         })
                                       }}
                                       className="bg-transparent border-0 p-1 hover:opacity-80 transition-opacity"
@@ -4219,6 +4220,17 @@ export default function AdminPage() {
                   >
                     <option value="chiropractor">Chiropractor</option>
                     <option value="admin">Administrator</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">Account Status</label>
+                  <select
+                    className="form-control text-sm"
+                    value={editUserForm.is_active ? 'active' : 'inactive'}
+                    onChange={e => setEditUserForm(prev => ({ ...prev, is_active: e.target.value === 'active' }))}
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
                   </select>
                 </div>
               </div>
