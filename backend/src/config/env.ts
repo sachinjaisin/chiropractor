@@ -30,7 +30,7 @@ const envSchema = z.object({
   S3_ENDPOINT: z.string().optional(),
 
   // Cloudinary
-  CLOUDINARY_CLOUD_NAME: z.string().default('chiroreferral-dev'),
+  CLOUDINARY_CLOUD_NAME: z.string().default('zigvspcx'),
   CLOUDINARY_API_KEY: z.string().default('123456789012345'),
   CLOUDINARY_API_SECRET: z.string().default('devsecret-xxxxxxxxxxxxxxx'),
 
