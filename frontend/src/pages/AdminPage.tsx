@@ -3012,33 +3012,55 @@ export default function AdminPage() {
             <div className="carddesign">
               <div className="cardbody space-y-4">
                 {Object.entries(settings).map(([key, setting]) => (
-                  <div key={key} className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-4 last:border-b-0 last:pb-0">
+                  <div key={key} className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-4 last:border-b-0 last:pb-0 items-center">
                     <div>
                       <span className="font-mono text-sm font-semibold text-gray-800">{key}</span>
                       <p className="text-xs text-gray-500 mt-0.5">{setting.description}</p>
                     </div>
-                    <div className="md:col-span-2">
-                      <input
-                        type="text"
-                        className="form-control text-sm"
-                        value={
-                          typeof setting.value === 'object'
-                            ? JSON.stringify(setting.value)
-                            : setting.value ?? ''
-                        }
-                        onChange={e => {
-                          let val: any = e.target.value
-                          try {
-                            if (val.startsWith('{') || val.startsWith('[')) {
-                              val = JSON.parse(val)
-                            }
-                          } catch {}
-                          setSettings(prev => ({
-                            ...prev,
-                            [key]: { ...prev[key], value: val }
-                          }))
-                        }}
-                      />
+                    <div className="md:col-span-2 flex items-center h-10">
+                      {typeof setting.value === 'boolean' ? (
+                        <input
+                          type="checkbox"
+                          className="form-check-input w-5 h-5 cursor-pointer"
+                          style={{
+                            width: '20px',
+                            height: '20px',
+                            cursor: 'pointer',
+                            borderRadius: '4px',
+                            border: '1px solid #cedcef'
+                          }}
+                          checked={setting.value}
+                          onChange={e => {
+                            const val = e.target.checked
+                            setSettings(prev => ({
+                              ...prev,
+                              [key]: { ...prev[key], value: val }
+                            }))
+                          }}
+                        />
+                      ) : (
+                        <input
+                          type="text"
+                          className="form-control text-sm w-full"
+                          value={
+                            typeof setting.value === 'object'
+                              ? JSON.stringify(setting.value)
+                              : setting.value ?? ''
+                          }
+                          onChange={e => {
+                            let val: any = e.target.value
+                            try {
+                              if (val.startsWith('{') || val.startsWith('[')) {
+                                val = JSON.parse(val)
+                              }
+                            } catch {}
+                            setSettings(prev => ({
+                              ...prev,
+                              [key]: { ...prev[key], value: val }
+                            }))
+                          }}
+                        />
+                      )}
                     </div>
                   </div>
                 ))}

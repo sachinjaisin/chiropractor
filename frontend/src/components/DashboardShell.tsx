@@ -41,7 +41,7 @@ export default function DashboardShell({
       ]
     : undefined
   useExternalStylesheet(customStylesheets)
-  const { user, logout, walletBalance, refreshWallet } = useAuth()
+  const { user, logout, walletBalance, refreshWallet, systemConfig } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -130,12 +130,14 @@ export default function DashboardShell({
                     </Link>
                   </div>
                   <ul className="navbar-nav ms-auto flex-row align-items-center">
-                    <li className="nav-item upgrade-nav">
-                      <Link className="nav-link" to="/wallet">
-                        <i className="la la-star"></i>
-                        {walletBalance !== null ? `${walletBalance} Tokens` : '0 Tokens'}
-                      </Link>
-                    </li>
+                    {!systemConfig.token_buying_disabled && (
+                      <li className="nav-item upgrade-nav">
+                        <Link className="nav-link" to="/wallet">
+                          <i className="la la-star"></i>
+                          {walletBalance !== null ? `${walletBalance} Tokens` : '0 Tokens'}
+                        </Link>
+                      </li>
+                    )}
                     <li
                       className={`nav-item dropdown notifications ${notifsDropdownOpen ? 'show' : ''}`}
                       style={{ position: 'relative' }}
@@ -294,22 +296,26 @@ export default function DashboardShell({
               Marketplace
             </Link>
           </li>
-          <li className={isActive('/wallet') ? 'active' : ''}>
-            <Link to="/wallet" onClick={() => setIsMobileNavOpen(false)}>
-              <span>
-                <img src="/assets/images/tokenwallet.svg" className="img-fluid" alt="" />
-              </span>
-              Token Wallet
-            </Link>
-          </li>
-          <li className={isActive('/subscription') ? 'active' : ''}>
-            <Link to="/subscription" onClick={() => setIsMobileNavOpen(false)}>
-              <span>
-                <img src="/assets/images/subscription.svg" className="img-fluid" alt="" />
-              </span>
-              Subscription
-            </Link>
-          </li>
+          {!systemConfig.token_buying_disabled && (
+            <li className={isActive('/wallet') ? 'active' : ''}>
+              <Link to="/wallet" onClick={() => setIsMobileNavOpen(false)}>
+                <span>
+                  <img src="/assets/images/tokenwallet.svg" className="img-fluid" alt="" />
+                </span>
+                Token Wallet
+              </Link>
+            </li>
+          )}
+          {!systemConfig.subscription_system_disabled && (
+            <li className={isActive('/subscription') ? 'active' : ''}>
+              <Link to="/subscription" onClick={() => setIsMobileNavOpen(false)}>
+                <span>
+                  <img src="/assets/images/subscription.svg" className="img-fluid" alt="" />
+                </span>
+                Subscription
+              </Link>
+            </li>
+          )}
           <li className={isActive('/feedback') ? 'active' : ''}>
             <Link to="/feedback" onClick={() => setIsMobileNavOpen(false)}>
               <span>

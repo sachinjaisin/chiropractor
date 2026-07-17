@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 import api from '@/lib/api'
@@ -55,6 +55,13 @@ function formatDate(iso: string): string {
 
 export default function SubscriptionPage() {
   const { user, walletBalance, systemConfig } = useAuth()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (systemConfig.subscription_system_disabled) {
+      navigate('/dashboard')
+    }
+  }, [systemConfig.subscription_system_disabled, navigate])
 
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [subLoading, setSubLoading] = useState(true)

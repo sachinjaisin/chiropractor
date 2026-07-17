@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 import api from '@/lib/api'
@@ -89,6 +89,13 @@ const getStatusClass = (type: Transaction['transaction_type']): string => {
 
 export default function WalletPage() {
   const { user, systemConfig } = useAuth()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (systemConfig.token_buying_disabled) {
+      navigate('/dashboard')
+    }
+  }, [systemConfig.token_buying_disabled, navigate])
 
   useExternalStylesheet(['https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css'])
 
