@@ -364,7 +364,11 @@ export default function SubscriptionPage() {
                       <ul>
                         <li>
                           <i className="la la-check"></i>
-                          {plan.included_tokens} tokens included / month
+                          {plan.name === 'Free' ? (
+                            `${plan.included_tokens} tokens included`
+                          ) : (
+                            `${plan.included_tokens} tokens included / month`
+                          )}
                         </li>
                         <li>
                           <i className="la la-check"></i>Priority referral matches
