@@ -695,6 +695,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
           phone:      { type: 'string', nullable: true },
           role:       { type: 'string', enum: ['chiropractor', 'admin'] },
           is_active:  { type: 'boolean' },
+          chiropractor_status: { type: 'string', enum: ['PENDING_PROFILE','PROFILE_COMPLETED','PENDING_APPROVAL','ACTIVE','REJECTED','SUSPENDED'] },
         },
       },
       response: { 200: { type: 'object', properties: { message: { type: 'string' } } } },
@@ -708,6 +709,7 @@ const adminRoutes: FastifyPluginAsync = async (fastify) => {
       phone:      z.string().nullable().optional(),
       role:       z.enum(['chiropractor', 'admin']).optional(),
       is_active:  z.boolean().optional(),
+      chiropractor_status: z.enum(['PENDING_PROFILE','PROFILE_COMPLETED','PENDING_APPROVAL','ACTIVE','REJECTED','SUSPENDED']).optional(),
     }).parse(req.body);
     await adminSvc.editUser(id, body, req.currentUser.sub);
     return reply.send({ message: 'User updated' });

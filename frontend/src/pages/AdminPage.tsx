@@ -149,6 +149,7 @@ interface AdminUser {
   last_login_at: string | null
   created_at: string
   phone?: string | null
+  chiropractor_status?: string | null
 }
 
 // ─── Referral types ───────────────────────────────────────────────────────────
@@ -317,7 +318,7 @@ export default function AdminPage() {
 
   // Modals & Forms States
   const [editUserTarget, setEditUserTarget] = useState<AdminUser | null>(null)
-  const [editUserForm, setEditUserForm] = useState({ first_name: '', last_name: '', email: '', phone: '', role: '', is_active: true })
+  const [editUserForm, setEditUserForm] = useState({ first_name: '', last_name: '', email: '', phone: '', role: '', is_active: true, chiropractor_status: '' })
   
   const [infoRequestTarget, setInfoRequestTarget] = useState<string | null>(null)
   const [infoRequestMessage, setInfoRequestMessage] = useState('')
@@ -2514,7 +2515,7 @@ export default function AdminPage() {
                                           email: u.email,
                                           phone: u.phone || '',
                                           role: u.role,
-                                          is_active: u.is_active,
+                                          is_active: u.is_active, chiropractor_status: u.chiropractor_status || '',
                                         })
                                       }}
                                       className="bg-transparent border-0 p-1 hover:opacity-80 transition-opacity"
@@ -4233,6 +4234,23 @@ export default function AdminPage() {
                     <option value="inactive">Inactive</option>
                   </select>
                 </div>
+                {editUserForm.role === 'chiropractor' && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Chiropractor Status</label>
+                    <select
+                      className="form-control text-sm"
+                      value={editUserForm.chiropractor_status}
+                      onChange={e => setEditUserForm(prev => ({ ...prev, chiropractor_status: e.target.value }))}
+                    >
+                      <option value="PENDING_PROFILE">Pending Profile</option>
+                      <option value="PROFILE_COMPLETED">Profile Completed</option>
+                      <option value="PENDING_APPROVAL">Pending Approval</option>
+                      <option value="ACTIVE">Active</option>
+                      <option value="REJECTED">Rejected</option>
+                      <option value="SUSPENDED">Suspended</option>
+                    </select>
+                  </div>
+                )}
               </div>
               <div className="flex gap-2 mt-5">
                 <button

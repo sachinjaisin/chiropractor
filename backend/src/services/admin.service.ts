@@ -710,11 +710,11 @@ export class AdminService {
   async listUsers(opts: { cursor?: string; limit?: number; search?: string }) {
     const limit = Math.min(opts.limit ?? 20, 100);
     const params: unknown[] = [limit + 1];
-    const conditions: string[] = ["role != 'admin'"];
+    const conditions: string[] = ["u.role != 'admin'"];
     let idx = 2;
 
     if (opts.search) {
-      conditions.push(`(email ILIKE $${idx} OR first_name ILIKE $${idx} OR last_name ILIKE $${idx})`);
+      conditions.push(`(u.email ILIKE $${idx} OR u.first_name ILIKE $${idx} OR u.last_name ILIKE $${idx})`);
       params.push(`%${opts.search}%`);
       idx++;
     }
@@ -722,15 +722,17 @@ export class AdminService {
     if (opts.cursor) {
       const decoded = decodeCursor(opts.cursor);
       if (decoded) {
-        conditions.push(`(created_at, id) < ($${idx++}::timestamptz, $${idx++}::uuid)`);
+        conditions.push(`(u.created_at, u.id) < ($${idx++}::timestamptz, $${idx++}::uuid)`);
         params.push(decoded.created_at, decoded.id);
       }
     }
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
     const rows = await query(
-      `SELECT id, email, first_name, last_name, phone, role, is_active, last_login_at, created_at
-       FROM users ${where} ORDER BY created_at DESC LIMIT $1`,
+      `SELECT u.id, u.email, u.first_name, u.last_name, u.phone, u.role, u.is_active, u.last_login_at, u.created_at, p.status AS chiropractor_status
+       FROM users u
+       LEFT JOIN practitioners p ON p.user_id = u.id
+       ${where} ORDER BY u.created_at DESC LIMIT $1`,
       params,
     );
 
@@ -855,7 +857,7 @@ export class AdminService {
 
   async editUser(
     userId: string,
-    input: { first_name?: string; last_name?: string; email?: string; phone?: string | null; role?: string; is_active?: boolean },
+    input: { first_name?: string; last_name?: string; email?: string; phone?: string | null; role?: string; is_active?: boolean; chiropractor_status?: string },
     adminUserId: string,
   ): Promise<void> {
     const user = await queryOne<{ id: string; is_active: boolean }>('SELECT id, is_active FROM users WHERE id = $1', [userId]);
@@ -867,6 +869,22 @@ export class AdminService {
         await this.disableUser(userId, adminUserId);
       } else {
         await this.reactivateUser(userId, adminUserId);
+      }
+    }
+
+    // Handle chiropractor_status override if provided
+    if (input.chiropractor_status !== undefined) {
+      const practitioner = await queryOne<{ id: string }>(
+        'SELECT id FROM practitioners WHERE user_id = $1',
+        [userId],
+      );
+      if (practitioner) {
+        await this.updatePractitionerStatus(
+          practitioner.id,
+          input.chiropractor_status,
+          adminUserId,
+          'Updated via user profile edit modal'
+        );
       }
     }
 

@@ -40,6 +40,7 @@ const SCHEMAS = [
       profile_pic_url: { type: 'string', nullable: true },
       profile_pic_key: { type: 'string', nullable: true },
       created_at:    { type: 'string', format: 'date-time' },
+      chiropractor_status: { type: 'string', enum: ['PENDING_PROFILE','PROFILE_COMPLETED','PENDING_APPROVAL','ACTIVE','REJECTED','SUSPENDED'], nullable: true },
     },
   },
   {
