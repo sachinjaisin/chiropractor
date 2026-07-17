@@ -682,8 +682,93 @@ export class AdminService {
     return this.storage.getSignedDownloadUrl(doc.s3_key);
   }
 
-  async disableUser(userId: string, _adminUserId: string): Promise<void> {
-    await query('UPDATE users SET is_active = FALSE WHERE id = $1', [userId]);
+  async disableUser(userId: string, adminUserId: string): Promise<void> {
+    await withTransaction(async (client) => {
+      // Get user record to check if they are a chiropractor
+      const user = await client.query(
+        'SELECT id, role FROM users WHERE id = $1 FOR UPDATE',
+        [userId]
+      ).then(r => r.rows[0]);
+
+      if (!user) {
+        throw new NotFoundError('User');
+      }
+
+      if (user.role === 'chiropractor') {
+        // Find practitioner record
+        const practitioner = await client.query(
+          'SELECT id FROM practitioners WHERE user_id = $1 FOR UPDATE',
+          [userId]
+        ).then(r => r.rows[0]);
+
+        if (practitioner) {
+          const practitionerId = practitioner.id;
+
+          // Find and cancel active subscription
+          const [sub] = await client.query(
+            `SELECT * FROM subscriptions WHERE practitioner_id = $1 AND status = 'ACTIVE' FOR UPDATE`,
+            [practitionerId]
+          ).then(r => r.rows);
+
+          if (sub) {
+            // Cancel on Stripe if enabled and not a mock subscription
+            if (sub.stripe_subscription_id && !sub.stripe_subscription_id.startsWith('mock_')) {
+              const stripeSvc = new StripeService();
+              if (stripeSvc.isEnabled()) {
+                try {
+                  await stripeSvc.cancelSubscription(sub.stripe_subscription_id);
+                } catch (err: any) {
+                  logger.warn({ err: err.message, subscriptionId: sub.stripe_subscription_id }, 'Failed to cancel Stripe subscription during admin disableUser');
+                }
+              }
+            }
+
+            // Mark subscription cancelled locally
+            await client.query(
+              `UPDATE subscriptions SET status = 'CANCELLED', cancelled_at = NOW(), updated_at = NOW() WHERE id = $1`,
+              [sub.id]
+            );
+          }
+
+          // Find and zero out token wallet
+          const [wallet] = await client.query(
+            `SELECT * FROM token_wallets WHERE practitioner_id = $1 FOR UPDATE`,
+            [practitionerId]
+          ).then(r => r.rows);
+
+          if (wallet && wallet.balance > 0) {
+            const deduction = wallet.balance;
+            // Update wallet balance to 0
+            await client.query(
+              `UPDATE token_wallets SET balance = 0, total_used = total_used + $1, updated_at = NOW() WHERE id = $2`,
+              [deduction, wallet.id]
+            );
+
+            // Record transaction
+            await client.query(
+              `INSERT INTO token_transactions
+                 (wallet_id, practitioner_id, transaction_type, amount, balance_after, notes)
+               VALUES ($1, $2, 'ADJUSTMENT', $3, 0, $4)`,
+              [wallet.id, practitionerId, -deduction, 'Account deactivated by admin. Subscription cancelled and token balance cleared.']
+            );
+          }
+        }
+      }
+
+      // Disable the user
+      await client.query(
+        'UPDATE users SET is_active = FALSE, updated_at = NOW() WHERE id = $1',
+        [userId]
+      );
+    });
+
+    await this.audit.log(null, {
+      user_id: adminUserId,
+      action: 'DISABLE_USER',
+      entity_type: 'user',
+      entity_id: userId,
+    });
+
     await emailQueue.add('send-user-action', { user_id: userId, action: 'DISABLED' });
   }
 

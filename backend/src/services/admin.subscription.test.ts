@@ -137,4 +137,93 @@ describe('AdminService Subscription Management', () => {
       expect(result.included_tokens).toBe(10);
     });
   });
+
+  describe('disableUser', () => {
+    it('should disable a user and cancel subscription / clear tokens if they are a chiropractor', async () => {
+      const { withTransaction } = require('../config/database');
+
+      const mockUser = { id: 'user-123', role: 'chiropractor', is_active: true };
+      const mockPractitioner = { id: 'prac-123' };
+      const mockSub = { id: 'sub-123', stripe_subscription_id: 'mock_sub_123', status: 'ACTIVE' };
+      const mockWallet = { id: 'wallet-123', balance: 5 };
+
+      const mockClient = {
+        query: jest.fn()
+          // 1. SELECT id, role FROM users
+          .mockResolvedValueOnce({ rows: [mockUser] })
+          // 2. SELECT id FROM practitioners
+          .mockResolvedValueOnce({ rows: [mockPractitioner] })
+          // 3. SELECT * FROM subscriptions
+          .mockResolvedValueOnce({ rows: [mockSub] })
+          // 4. UPDATE subscriptions
+          .mockResolvedValueOnce({ rows: [] })
+          // 5. SELECT * FROM token_wallets
+          .mockResolvedValueOnce({ rows: [mockWallet] })
+          // 6. UPDATE token_wallets
+          .mockResolvedValueOnce({ rows: [] })
+          // 7. INSERT INTO token_transactions
+          .mockResolvedValueOnce({ rows: [] })
+          // 8. UPDATE users (disable)
+          .mockResolvedValueOnce({ rows: [] }),
+      };
+
+      (withTransaction as jest.Mock).mockImplementationOnce(async (fn: any) => fn(mockClient));
+      
+      // Mock audit.log to prevent database query
+      service.audit.log = jest.fn().mockResolvedValue(undefined);
+
+      await service.disableUser('user-123', 'admin-user');
+
+      // Check first user query
+      expect(mockClient.query).toHaveBeenCalledWith(
+        expect.stringContaining('SELECT id, role FROM users'),
+        ['user-123']
+      );
+
+      // Check practitioner query
+      expect(mockClient.query).toHaveBeenCalledWith(
+        expect.stringContaining('SELECT id FROM practitioners'),
+        ['user-123']
+      );
+
+      // Check subscription query
+      expect(mockClient.query).toHaveBeenCalledWith(
+        expect.stringContaining("SELECT * FROM subscriptions WHERE practitioner_id = $1 AND status = 'ACTIVE'"),
+        ['prac-123']
+      );
+
+      // Check subscription cancel query
+      expect(mockClient.query).toHaveBeenCalledWith(
+        expect.stringContaining("UPDATE subscriptions SET status = 'CANCELLED'"),
+        ['sub-123']
+      );
+
+      // Check token wallet balance clear query
+      expect(mockClient.query).toHaveBeenCalledWith(
+        expect.stringContaining('UPDATE token_wallets SET balance = 0'),
+        [5, 'wallet-123']
+      );
+
+      // Check token transaction insert query
+      expect(mockClient.query).toHaveBeenCalledWith(
+        expect.stringContaining('INSERT INTO token_transactions'),
+        expect.arrayContaining(['wallet-123', 'prac-123', -5])
+      );
+
+      // Check user status disable query
+      expect(mockClient.query).toHaveBeenCalledWith(
+        expect.stringContaining('UPDATE users SET is_active = FALSE'),
+        ['user-123']
+      );
+
+      // Check audit logging
+      expect(service.audit.log).toHaveBeenCalledWith(null, expect.objectContaining({
+        user_id: 'admin-user',
+        action: 'DISABLE_USER',
+        entity_type: 'user',
+        entity_id: 'user-123',
+      }));
+    });
+  });
 });
+
