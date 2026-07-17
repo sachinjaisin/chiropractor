@@ -16,10 +16,20 @@ export class StorageService {
   private bucket: string;
 
   constructor() {
-    this.s3 = new S3Client({
-      region:   env.AWS_REGION,
-      ...(env.S3_ENDPOINT ? { endpoint: env.S3_ENDPOINT, forcePathStyle: true } : {}),
-    });
+    const config: any = {
+      region: env.AWS_REGION,
+    };
+    if (env.S3_ENDPOINT) {
+      config.endpoint = env.S3_ENDPOINT;
+      config.forcePathStyle = true;
+    }
+    if (env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY) {
+      config.credentials = {
+        accessKeyId: env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+      };
+    }
+    this.s3 = new S3Client(config);
     this.bucket = env.S3_BUCKET_DOCUMENTS;
   }
 
@@ -39,7 +49,7 @@ export class StorageService {
         Key:                  s3Key,
         Body:                 buffer,
         ContentType:          mimeType,
-        ServerSideEncryption: 'aws:kms',
+        ServerSideEncryption: 'AES256',
         Metadata: {
           practitioner_id: practitionerId,
           document_type:   documentType,
