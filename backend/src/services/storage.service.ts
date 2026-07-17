@@ -20,8 +20,12 @@ export class StorageService {
       region: env.AWS_REGION,
     };
     if (env.S3_ENDPOINT) {
-      config.endpoint = env.S3_ENDPOINT;
-      config.forcePathStyle = true;
+      const isLocalhostEndpoint = env.S3_ENDPOINT.includes('localhost') || env.S3_ENDPOINT.includes('127.0.0.1');
+      const isDevCredentials = env.AWS_ACCESS_KEY_ID === 'dev';
+      if (!isLocalhostEndpoint || isDevCredentials) {
+        config.endpoint = env.S3_ENDPOINT;
+        config.forcePathStyle = true;
+      }
     }
     if (env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY) {
       config.credentials = {
