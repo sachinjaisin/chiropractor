@@ -29,6 +29,11 @@ const envSchema = z.object({
   S3_BUCKET_DOCUMENTS: z.string().default('chiroreferral-documents-dev'),
   S3_ENDPOINT: z.string().optional(),
 
+  // Cloudinary
+  CLOUDINARY_CLOUD_NAME: z.string().default('chiroreferral-dev'),
+  CLOUDINARY_API_KEY: z.string().default('123456789012345'),
+  CLOUDINARY_API_SECRET: z.string().default('devsecret-xxxxxxxxxxxxxxx'),
+
   // Stripe
   STRIPE_SECRET_KEY: z.string().default('sk_test_dev'),
   STRIPE_WEBHOOK_SECRET: z.string().default('whsec_dev'),
