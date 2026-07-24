@@ -123,11 +123,11 @@ export default function MarketplacePage() {
 
   const handleClaim = async (referralId: string) => {
     if (walletBalance !== null && walletBalance < 1) {
-      toast.error('You do not have enough tokens to claim this referral.')
+      toast.error('You do not have enough Care Tokens to claim this referral.')
       return
     }
 
-    if (!window.confirm('Are you sure you want to claim this referral? 1 token will be deducted from your wallet.')) {
+    if (!window.confirm('Are you sure you want to claim this referral? 1 Care Token will be deducted from your wallet.')) {
       return
     }
 
@@ -186,12 +186,12 @@ export default function MarketplacePage() {
             Chiropractor Wallet
           </span>
           <h3 className="fw-bold mt-1 text-dark m-0" style={{ fontSize: '24px' }}>
-            {walletBalance !== null ? `${walletBalance} Tokens Available` : '0 Tokens'}
+            {walletBalance !== null ? `${walletBalance} Care Tokens Available` : '0 Care Tokens'}
           </h3>
-          <p className="text-secondary text-xs m-0">Claiming any referral costs exactly 1 token.</p>
+          <p className="text-secondary text-xs m-0">Claiming any referral costs exactly 1 Care Token.</p>
         </div>
         <Link to="/wallet" className="btn btn-info px-4">
-          Buy Tokens
+          Buy Care Tokens
         </Link>
       </div>
 
@@ -416,7 +416,7 @@ export default function MarketplacePage() {
                           Patient Details Locked
                         </h5>
                         <p className="text-xs text-secondary mb-4 max-w-xs mx-auto">
-                          Claim this case using exactly 1 token to unlock phone, email, and treatment location.
+                          Claim this case using exactly 1 Care Token to unlock phone, email, and treatment location.
                         </p>
                         <button
                           className="btn btn-info w-100 py-2.5"
@@ -426,14 +426,14 @@ export default function MarketplacePage() {
                           {isClaimLoading ? (
                             <Loader2 className="w-4 h-4 animate-spin mx-auto text-white" />
                           ) : (
-                            'Claim Case (1 Token)'
+                            'Claim Case (1 Care Token)'
                           )}
                         </button>
                         {walletBalance === 0 && (
                           <p className="text-[11px] text-danger mt-2 font-medium">
                             Insufficient balance.{' '}
                             <Link to="/wallet" className="text-primary fw-semibold">
-                              Buy Tokens
+                              Buy Care Tokens
                             </Link>
                           </p>
                         )}

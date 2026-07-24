@@ -270,7 +270,7 @@ export default function AdminShell({ children, activeTab, setActiveTab }: AdminS
                   <span>
                     <img src="/assets/images/tokenwallet.svg" className="img-fluid" alt="" />
                   </span>
-                  Token Packages
+                  Care Tokens Packages
                 </a>
               </li>
               <li className={activeTab === 'settings' ? 'active' : ''}>
@@ -389,7 +389,7 @@ export default function AdminShell({ children, activeTab, setActiveTab }: AdminS
                   <span>
                     <img src="/assets/images/tokenwallet.svg" className="img-fluid" alt="" />
                   </span>
-                  Token Packages
+                  Care Tokens Packages
                 </Link>
               </li>
               <li>

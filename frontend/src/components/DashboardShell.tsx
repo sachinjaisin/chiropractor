@@ -134,12 +134,12 @@ export default function DashboardShell({
                       {systemConfig.token_buying_disabled ? (
                         <span className="nav-link" style={{ cursor: 'default' }}>
                           <i className="la la-star"></i>
-                          {walletBalance !== null ? `${walletBalance} Tokens` : '0 Tokens'}
+                          {walletBalance !== null ? `${walletBalance} Care Tokens` : '0 Care Tokens'}
                         </span>
                       ) : (
                         <Link className="nav-link" to="/wallet">
                           <i className="la la-star"></i>
-                          {walletBalance !== null ? `${walletBalance} Tokens` : '0 Tokens'}
+                          {walletBalance !== null ? `${walletBalance} Care Tokens` : '0 Care Tokens'}
                         </Link>
                       )}
                     </li>
@@ -298,7 +298,7 @@ export default function DashboardShell({
               <span>
                 <img src="/assets/images/marketplace.svg" className="img-fluid" alt="" />
               </span>
-              Marketplace
+              Care Requests
             </Link>
           </li>
           {!systemConfig.token_buying_disabled && (
@@ -307,7 +307,7 @@ export default function DashboardShell({
                 <span>
                   <img src="/assets/images/tokenwallet.svg" className="img-fluid" alt="" />
                 </span>
-                Token Wallet
+                Care Tokens Wallet
               </Link>
             </li>
           )}

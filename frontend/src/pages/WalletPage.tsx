@@ -46,12 +46,12 @@ interface Package {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const TYPE_LABELS: Record<Transaction['transaction_type'], string> = {
-  PURCHASE: 'Token Purchase',
+  PURCHASE: 'Care Token Purchase',
   MONTHLY_ALLOCATION: 'Monthly Allocation',
   REFERRAL_CLAIM: 'Referral Claim',
   REFUND: 'Refund',
   ADJUSTMENT: 'Adjustment',
-  EXPIRY: 'Token Expiry',
+  EXPIRY: 'Care Token Expiry',
 }
 
 function formatPrice(cents: number): string {
@@ -334,8 +334,8 @@ export default function WalletPage() {
       <div className="row toprow">
         <div className="col-md-12">
           <div className="page-title">
-            <h1>Token Wallet</h1>
-            <p>View your available token balance, buy new packages, and review all account activity.</p>
+            <h1>Care Tokens Wallet</h1>
+            <p>View your available Care Token balance, buy new packages, and review all account activity.</p>
           </div>
         </div>
       </div>
@@ -355,7 +355,7 @@ export default function WalletPage() {
                   <div className="dashboard-card-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <img src="/assets/images/tokens-card1.svg" className="img-fluid" alt="" />
                   </div>
-                  <h4>Tokens Available</h4>
+                  <h4>Care Tokens Available</h4>
                   <h3>{wallet.balance.toLocaleString()}</h3>
                   <p className="dashboard-success">NEW REFERRALS</p>
                 </div>
@@ -401,7 +401,7 @@ export default function WalletPage() {
       {!systemConfig.token_buying_disabled && (
         <div className="carddesign">
           <div className="cardheading">
-            <h2>Token Purchase</h2>
+            <h2>Care Token Purchase</h2>
           </div>
           <div className="cardbody">
             {packagesLoading ? (
@@ -419,7 +419,7 @@ export default function WalletPage() {
                         <img src="/assets/images/token.png" className="img-fluid" alt="" />
                       </span>
                       <h3>
-                        {pkg.token_count} <span>Tokens</span>
+                        {pkg.token_count} <span>Care Tokens</span>
                       </h3>
                       <h4>{formatPrice(pkg.price_cents)}</h4>
                       <button

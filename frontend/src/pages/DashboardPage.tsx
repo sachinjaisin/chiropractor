@@ -565,7 +565,7 @@ export default function DashboardPage() {
   const claimReferral = useCallback(
     async (id: string, retry = false) => {
       if (walletBalance === 0) {
-        toast.error('Insufficient token balance. Please purchase more tokens.')
+        toast.error('Insufficient Care Tokens balance. Please purchase more Care Tokens.')
         return
       }
       setIsClaimLoading(true)
@@ -1485,12 +1485,12 @@ export default function DashboardPage() {
                               {isClaimLoading ? (
                                 <Loader2 className="w-4 h-4 animate-spin mx-auto text-white" />
                               ) : (
-                                `Claim Case (1 Token)`
+                                `Claim Case (1 Care Token)`
                               )}
                             </button>
                             {walletBalance === 0 && (
                               <p className="text-[11px] text-danger mt-1">
-                                Insufficient balance. <Link to="/wallet" className="text-primary font-semibold">Buy Tokens</Link>
+                                Insufficient balance. <Link to="/wallet" className="text-primary font-semibold">Buy Care Tokens</Link>
                               </p>
                             )}
                           </div>

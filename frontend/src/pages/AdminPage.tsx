@@ -1032,7 +1032,7 @@ export default function AdminPage() {
     { key: 'referrals', label: 'Referrals', Icon: ClipboardList },
     { key: 'feedback', label: 'Feedback & Compliance', Icon: ShieldAlert },
     { key: 'plans', label: 'Subscription Plans', Icon: CreditCard },
-    { key: 'packages', label: 'Token Packages', Icon: Coins },
+    { key: 'packages', label: 'Care Tokens Packages', Icon: Coins },
     { key: 'settings', label: 'Settings', Icon: Sliders },
     { key: 'audit-logs', label: 'Audit Logs', Icon: ClipboardList },
     { key: 'transactions', label: 'Transactions', Icon: Coins },
@@ -1132,10 +1132,10 @@ export default function AdminPage() {
     try {
       if (selectedPackage) {
         await api.patch(`/admin/packages/${selectedPackage.id}`, packageForm)
-        toast.success('Token package updated successfully.')
+        toast.success('Care Token package updated successfully.')
       } else {
         await api.post('/admin/packages', packageForm)
-        toast.success('Token package created successfully.')
+        toast.success('Care Token package created successfully.')
       }
       setPackageModalOpen(false)
       loadPackages()
@@ -2043,11 +2043,11 @@ export default function AdminPage() {
                                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             {/* Wallet Info & Adjust Buttons */}
                                             <div className="space-y-3">
-                                              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Token Wallet</p>
+                                              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Care Tokens Wallet</p>
                                               <div className="bg-gray-50 rounded-lg p-3 grid grid-cols-2 gap-2 text-xs">
                                                 <div>
                                                   <span className="text-gray-400">Balance:</span>
-                                                  <p className="text-base font-bold text-gray-900">{(detail as any).wallet?.balance ?? 0} tokens</p>
+                                                  <p className="text-base font-bold text-gray-900">{(detail as any).wallet?.balance ?? 0} Care Tokens</p>
                                                 </div>
                                                 <div>
                                                   <span className="text-gray-400">Total Purchased:</span>
@@ -2071,7 +2071,7 @@ export default function AdminPage() {
                                                 }}
                                                 className="btn btn-secondary text-xs w-full py-1.5 flex items-center justify-center gap-1"
                                               >
-                                                Adjust Token Balance
+                                                Adjust Care Tokens Balance
                                               </button>
                                             </div>
 
@@ -3242,7 +3242,7 @@ export default function AdminPage() {
                           <tr>
                             <th>Name</th>
                             <th>Monthly Price</th>
-                            <th>Included Tokens</th>
+                            <th>Included Care Tokens</th>
                             <th>Stripe Price ID</th>
                             <th style={{ textAlign: 'center' }}>Status</th>
                             <th>Order</th>
@@ -3260,7 +3260,7 @@ export default function AdminPage() {
                                 ${(p.monthly_price_cents / 100).toFixed(2)}
                               </td>
                               <td className="font-medium text-gray-700">
-                                {p.included_tokens} tokens
+                                {p.included_tokens} Care Tokens
                               </td>
                               <td className="font-mono text-xs text-gray-400">
                                 {p.stripe_price_id}
@@ -3419,7 +3419,7 @@ export default function AdminPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-gray-500 mb-1">Included Tokens *</label>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">Included Care Tokens *</label>
                         <input
                           type="number"
                           min="0"
@@ -3497,8 +3497,8 @@ export default function AdminPage() {
           <div className="carddesign">
             <div className="cardheading align-items-center">
               <h2>
-                Token Packages
-                <span>Manage standalone token packages available for purchase.</span>
+                Care Tokens Packages
+                <span>Manage standalone Care Token packages available for purchase.</span>
               </h2>
               <button
                 onClick={() => {
@@ -3563,7 +3563,7 @@ export default function AdminPage() {
                       <table className="table dt-responsive categories_table dataTable no-footer">
                         <thead>
                           <tr>
-                            <th>Token Count</th>
+                            <th>Care Tokens Count</th>
                             <th>Price (USD)</th>
                             <th>Stripe Price ID</th>
                             <th style={{ textAlign: 'center' }}>Status</th>
@@ -3575,7 +3575,7 @@ export default function AdminPage() {
                           {paginatedPackages.map((pkg: any) => (
                             <tr key={pkg.id}>
                               <td className="font-semibold text-gray-900">
-                                {pkg.token_count} tokens
+                                {pkg.token_count} Care Tokens
                               </td>
                               <td className="font-semibold text-gray-800">
                                 ${(pkg.price_cents / 100).toFixed(2)}
@@ -3689,16 +3689,16 @@ export default function AdminPage() {
               <div className="carddesign w-full max-w-md">
                 <div className="cardbody">
                   <h3 className="font-semibold text-gray-900 mb-1">
-                    {selectedPackage ? 'Edit Token Package' : 'Create New Token Package'}
+                    {selectedPackage ? 'Edit Care Token Package' : 'Create New Care Token Package'}
                   </h3>
                   <p className="text-xs text-gray-400 mb-4">
-                    Modify billing configurations for standalone token packages.
+                    Modify billing configurations for standalone Care Token packages.
                   </p>
 
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-gray-500 mb-1">Token Count *</label>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">Care Token Count *</label>
                         <input
                           type="number"
                           min="1"
@@ -3946,7 +3946,7 @@ export default function AdminPage() {
             <div className="cardheading align-items-center">
               <h2>
                 Platform Transactions
-                <span>Live token transactions ledger across all practitioner accounts.</span>
+                <span>Live Care Token transactions ledger across all practitioner accounts.</span>
               </h2>
             </div>
 
@@ -4012,12 +4012,12 @@ export default function AdminPage() {
                     {paginatedTransactions.map((tx: any) => {
                       const isPositive = tx.amount > 0
                       const TYPE_LABELS: Record<string, string> = {
-                        PURCHASE: 'Token Purchase',
+                        PURCHASE: 'Care Token Purchase',
                         MONTHLY_ALLOCATION: 'Monthly Allocation',
                         REFERRAL_CLAIM: 'Referral Claim',
                         REFUND: 'Refund',
                         ADJUSTMENT: 'Adjustment',
-                        EXPIRY: 'Token Expiry',
+                        EXPIRY: 'Care Token Expiry',
                       }
                       return (
                         <tr key={tx.id}>
@@ -4479,9 +4479,9 @@ export default function AdminPage() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="carddesign w-full max-w-md">
             <div className="cardbody">
-              <h3 className="font-semibold text-gray-900 mb-1">Adjust Chiropractor Token Balance</h3>
+              <h3 className="font-semibold text-gray-900 mb-1">Adjust Chiropractor Care Token Balance</h3>
               <p className="text-sm text-gray-500 mb-4">
-                Manually add or deduct tokens for {walletAdjustTarget.first_name} {walletAdjustTarget.last_name}.
+                Manually add or deduct Care Tokens for {walletAdjustTarget.first_name} {walletAdjustTarget.last_name}.
               </p>
               <div className="space-y-4">
                 <div>
@@ -4503,7 +4503,7 @@ export default function AdminPage() {
                         checked={walletAdjustType === 'REFUND'}
                         onChange={() => setWalletAdjustType('REFUND')}
                       />
-                      Token Refund
+                      Care Token Refund
                     </label>
                   </div>
                 </div>
@@ -4599,7 +4599,7 @@ export default function AdminPage() {
                       <option value="">-- Select Plan --</option>
                       {detailCache[subManageTarget.id]?.plans?.map((p: any) => (
                         <option key={p.id} value={p.id}>
-                          {p.name} (${(p.monthly_price_cents / 100).toFixed(2)}/mo — {p.included_tokens} tokens)
+                          {p.name} (${(p.monthly_price_cents / 100).toFixed(2)}/mo — {p.included_tokens} Care Tokens)
                         </option>
                       ))}
                     </select>

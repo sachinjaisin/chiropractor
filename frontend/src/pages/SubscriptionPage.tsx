@@ -239,8 +239,8 @@ export default function SubscriptionPage() {
                       </h4>
                       <p>
                         {subscription.plan_name === 'Free'
-                          ? `Includes ${subscription.included_tokens} tokens / 12 months`
-                          : `Includes ${subscription.included_tokens} tokens / renewal`}
+                          ? `Includes ${subscription.included_tokens} Care Tokens / 12 months`
+                          : `Includes ${subscription.included_tokens} Care Tokens / renewal`}
                       </p>
                     </div>
                   </div>
@@ -273,9 +273,9 @@ export default function SubscriptionPage() {
                       <span className="subscriptioniimg">
                         <img src="/assets/images/token.svg" className="img-fluid" alt="" />
                       </span>
-                      <span className="datetext">Current Token Balance</span>
+                      <span className="datetext">Current Care Token Balance</span>
                       <h4>
-                        {walletBalance !== null ? `${walletBalance} Tokens` : '0 Tokens'}
+                        {walletBalance !== null ? `${walletBalance} Care Tokens` : '0 Care Tokens'}
                       </h4>
                       <p>Available to use across your account.</p>
                     </div>
@@ -372,9 +372,9 @@ export default function SubscriptionPage() {
                         <li>
                           <i className="la la-check"></i>
                           {plan.name === 'Free' ? (
-                            `${plan.included_tokens} tokens included`
+                            `${plan.included_tokens} Care Tokens included`
                           ) : (
-                            `${plan.included_tokens} tokens included / month`
+                            `${plan.included_tokens} Care Tokens included / month`
                           )}
                         </li>
                         <li>
