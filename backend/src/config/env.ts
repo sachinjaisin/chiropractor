@@ -40,19 +40,28 @@ const envSchema = z.object({
 
   // SendGrid
   SENDGRID_API_KEY: z.string().default('SG.dev'),
-  SENDGRID_FROM_EMAIL: z.string().default('no-reply@chiroreferral.com'),
+  SENDGRID_FROM_EMAIL: z.string().default('no-reply@vitalitygroup.com.au'),
   SENDGRID_FROM_NAME: z.string().default('ChiroReferral'),
-  // Admin password reset
-  ADMIN_RESET_EMAIL_FROM: z.string().default('admin@chiroreferral.com'),
+
+  // Brevo
+  BREVO_API_KEY: z.string().optional(),
+  BREVO_FROM_EMAIL: z.string().default('no-reply@vitalitygroup.com.au'),
+  BREVO_FROM_NAME: z.string().default('ChiroReferral'),
+
+  // Admin account defaults & password reset
+  ADMIN_SEED_EMAIL: z.string().default('admin@vitalitygroup.com.au'),
+  ADMIN_SEED_PASSWORD: z.string().optional(),
+  ADMIN_RESET_EMAIL_FROM: z.string().default('admin@vitalitygroup.com.au'),
   ADMIN_RESET_EMAIL_SUBJECT: z.string().default('Admin Password Reset'),
   ADMIN_RESET_TOKEN_EXPIRY: z.coerce.number().default(3600),
+
   // SMTP
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().default(587),
   SMTP_SECURE: z.preprocess((val) => val === 'true' || val === '1' || val === true, z.boolean()).default(false),
   SMTP_USER: z.string().optional(),
   SMTP_PASS: z.string().optional(),
-  SMTP_FROM_EMAIL: z.string().default('no-reply@chiroreferral.com'),
+  SMTP_FROM_EMAIL: z.string().default('no-reply@vitalitygroup.com.au'),
   SMTP_FROM_NAME: z.string().default('ChiroReferral'),
 
   // Google Maps

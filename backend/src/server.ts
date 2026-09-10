@@ -49,9 +49,11 @@ async function buildServer() {
   await fastify.register(cors, {
     origin: env.NODE_ENV === 'production'
       ? [
+          'https://connect.vitalitygroup.com.au',
           'https://app.chiroreferral.com',
           'https://chiroreferral.com',
           'https://chiropractor-sage.vercel.app',
+          /\.vitalitygroup\.com\.au$/,
           /\.vercel\.app$/, // Allow Vercel preview deployments
         ]
       : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000'],

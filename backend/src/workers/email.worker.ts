@@ -6,6 +6,7 @@ import { query, queryOne } from '../config/database';
 import { env } from '../config/env';
 import { logger } from '../config/logger';
 import { generateFeedbackToken } from '../utils/crypto';
+import { escapeHtml } from '../utils/html';
 
 sgMail.setApiKey(env.SENDGRID_API_KEY);
 
@@ -43,6 +44,7 @@ type EmailJobData =
   | { type?: 'send-welcome'; to: string; first_name: string }
   | { type?: 'send-password-reset-success'; to: string; first_name: string }
   | { type?: 'send-subscription-activated'; to: string; first_name: string; plan_name: string; included_tokens: number }
+  | { type?: 'send-subscription-cancelled'; to: string; first_name: string; plan_name: string }
   | { type?: 'send-token-transaction'; to: string; first_name: string; transaction_type: string; amount: number; balance_after: number; notes: string }
   | { type?: 'send-profile-completed'; to: string; first_name: string };
 
@@ -53,8 +55,10 @@ function wrapEmailTemplate(salutation: string | null | undefined, bodyContentHtm
   const logoUrl = `${frontendUrl}/assets/images/logo.png`;
   const bgUrl = `${frontendUrl}/assets/images/bg.png`;
 
-  const salutationHeader = salutation
-    ? `<h3 style="margin: 0px 0px 15px 0px;font-weight: 600;font-size: 26px;color: #1f244a;font-family: 'Montserrat', sans-serif;">Hi ${salutation},</h3>`
+  const safeSalutation = salutation ? escapeHtml(salutation) : null;
+
+  const salutationHeader = safeSalutation
+    ? `<h3 style="margin: 0px 0px 15px 0px;font-weight: 600;font-size: 26px;color: #1f244a;font-family: 'Montserrat', sans-serif;">Hi ${safeSalutation},</h3>`
     : '';
 
   return `<!DOCTYPE html>
@@ -102,7 +106,32 @@ function wrapEmailTemplate(salutation: string | null | undefined, bodyContentHtm
 }
 
 async function sendEmail(to: string, subject: string, html: string): Promise<void> {
-  if (smtpTransporter) {
+  if (env.BREVO_API_KEY) {
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': env.BREVO_API_KEY,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        sender: {
+          name: env.BREVO_FROM_NAME || env.SMTP_FROM_NAME,
+          email: env.BREVO_FROM_EMAIL || env.SMTP_FROM_EMAIL,
+        },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html,
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      logger.error({ status: res.status, errText }, 'Brevo API email sending failed');
+      throw new Error(`Brevo API error (${res.status}): ${errText}`);
+    }
+    logger.debug({ to, subject }, 'Email sent via Brevo API');
+  } else if (smtpTransporter) {
     await smtpTransporter.sendMail({
       from: `"${env.SMTP_FROM_NAME}" <${env.SMTP_FROM_EMAIL}>`,
       to,
@@ -181,9 +210,10 @@ async function handleApprovalStatus(data: { practitioner_id: string; status: str
     `;
   } else if (data.status === 'REJECTED') {
     subject = 'ChiroReferral Application Update';
+    const safeReason = data.reason ? escapeHtml(data.reason) : '';
     bodyContent = `
       <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">After reviewing your application, we are unable to approve your account at this time.</p>
-      ${data.reason ? `<p style="font-size: 14px; margin: 12px 0px; color: #dc2626; font-family: 'Montserrat', sans-serif;"><strong>Reason:</strong> ${data.reason}</p>` : ''}
+      ${safeReason ? `<p style="font-size: 14px; margin: 12px 0px; color: #dc2626; font-family: 'Montserrat', sans-serif;"><strong>Reason:</strong> ${safeReason}</p>` : ''}
       <p style="font-size: 14px; margin: 12px 0px 0px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">Please contact support if you have questions.</p>
     `;
   } else if (data.status === 'PENDING_APPROVAL') {
@@ -277,18 +307,21 @@ async function handleReferralClaimed(data: { practitioner_id: string; referral_i
     [referral.patient_id],
   );
 
+  const safeRefNumber = escapeHtml(referral.referral_number);
+  const safeComplaint = escapeHtml(referral.primary_complaint);
+
   const patientDetails = patient ? `
     <div style="margin: 20px 0; padding: 15px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px;">
       <h4 style="margin: 0 0 10px 0; font-size: 16px; color: #1f244a;">Patient Contact Information</h4>
-      <p style="font-size: 14px; margin: 5px 0;"><strong>Name:</strong> ${patient.first_name} ${patient.last_name}</p>
-      <p style="font-size: 14px; margin: 5px 0;"><strong>Email:</strong> ${patient.email}</p>
-      <p style="font-size: 14px; margin: 5px 0;"><strong>Phone:</strong> ${patient.phone}</p>
+      <p style="font-size: 14px; margin: 5px 0;"><strong>Name:</strong> ${escapeHtml(patient.first_name)} ${escapeHtml(patient.last_name)}</p>
+      <p style="font-size: 14px; margin: 5px 0;"><strong>Email:</strong> ${escapeHtml(patient.email)}</p>
+      <p style="font-size: 14px; margin: 5px 0;"><strong>Phone:</strong> ${escapeHtml(patient.phone)}</p>
     </div>
   ` : '';
 
   const bodyContent = `
-    <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">You have successfully claimed referral <strong>${referral.referral_number}</strong>.</p>
-    <p style="font-size: 14px; margin: 12px 0px; color: #1f244a; padding: 12px; background: #f3f4f6; border-radius: 6px; font-family: 'Montserrat', sans-serif;"><strong>Primary Complaint:</strong> ${referral.primary_complaint}</p>
+    <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">You have successfully claimed referral <strong>${safeRefNumber}</strong>.</p>
+    <p style="font-size: 14px; margin: 12px 0px; color: #1f244a; padding: 12px; background: #f3f4f6; border-radius: 6px; font-family: 'Montserrat', sans-serif;"><strong>Primary Complaint:</strong> ${safeComplaint}</p>
     ${patientDetails}
     <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">Please log in to your dashboard to view full case notes and manage your referral.</p>
     <p style="margin: 20px 0;"><a href="${env.APP_URL}/dashboard" style="background:#0068b9;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block;box-shadow:0 2px 4px rgba(0,104,185,0.2);font-family: 'Montserrat', sans-serif;">Go to Dashboard</a></p>
@@ -296,7 +329,7 @@ async function handleReferralClaimed(data: { practitioner_id: string; referral_i
 
   await sendEmail(
     user.email,
-    `Referral Claimed - ${referral.referral_number} — ChiroReferral`,
+    `Referral Claimed - ${safeRefNumber} — ChiroReferral`,
     wrapEmailTemplate(user.first_name, bodyContent),
   );
 }
@@ -317,13 +350,18 @@ async function handleNotifyAdminNewApplication(data: { practitioner_id: string }
   );
   if (admins.length === 0) return;
 
+  const safeFirstName = escapeHtml(practitioner.first_name);
+  const safeLastName = escapeHtml(practitioner.last_name);
+  const safeEmail = escapeHtml(practitioner.email);
+  const safePracticeName = practitioner.practice_name ? escapeHtml(practitioner.practice_name) : '—';
+
   const subject = 'New Chiropractor Application Pending Approval — ChiroReferral';
   const bodyContent = `
     <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">A new chiropractor has completed their profile and uploaded credentials:</p>
     <ul style="font-size: 14px; color: #374151; margin: 12px 0; padding-left: 20px; line-height: 1.8; font-family: 'Montserrat', sans-serif;">
-      <li><strong>Name:</strong> ${practitioner.first_name} ${practitioner.last_name}</li>
-      <li><strong>Email:</strong> ${practitioner.email}</li>
-      <li><strong>Practice Name:</strong> ${practitioner.practice_name ?? '—'}</li>
+      <li><strong>Name:</strong> ${safeFirstName} ${safeLastName}</li>
+      <li><strong>Email:</strong> ${safeEmail}</li>
+      <li><strong>Practice Name:</strong> ${safePracticeName}</li>
     </ul>
     <p style="margin: 20px 0;"><a href="${env.APP_URL}/admin" style="background:#0068b9;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block;box-shadow:0 2px 4px rgba(0,104,185,0.2);font-family: 'Montserrat', sans-serif;">Review Application</a></p>
   `;
@@ -346,16 +384,19 @@ async function handleSendUnclaimedReferralAlert(data: { admin_email: string; ref
   );
   if (!referral) return;
 
+  const safeRefNumber = escapeHtml(referral.referral_number);
+  const safeComplaint = escapeHtml(referral.primary_complaint);
+
   const bodyContent = `
-    <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">Referral <strong>${referral.referral_number}</strong> has expired without being claimed by any chiropractor.</p>
-    <p style="font-size: 14px; margin: 12px 0px; color: #1f244a; padding: 12px; background: #f3f4f6; border-radius: 6px; font-family: 'Montserrat', sans-serif;"><strong>Primary Complaint:</strong> ${referral.primary_complaint}</p>
+    <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">Referral <strong>${safeRefNumber}</strong> has expired without being claimed by any chiropractor.</p>
+    <p style="font-size: 14px; margin: 12px 0px; color: #1f244a; padding: 12px; background: #f3f4f6; border-radius: 6px; font-family: 'Montserrat', sans-serif;"><strong>Primary Complaint:</strong> ${safeComplaint}</p>
     <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">You can reassign this referral, extend its visibility, or close it from the admin console.</p>
     <p style="margin: 20px 0;"><a href="${env.APP_URL}/admin" style="background:#0068b9;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block;box-shadow:0 2px 4px rgba(0,104,185,0.2);font-family: 'Montserrat', sans-serif;">Manage Referral</a></p>
   `;
 
   await sendEmail(
     data.admin_email,
-    `Referral Unclaimed & Expired: ${referral.referral_number} — ChiroReferral`,
+    `Referral Unclaimed & Expired: ${safeRefNumber} — ChiroReferral`,
     wrapEmailTemplate('Admin', bodyContent),
   );
 }
@@ -372,11 +413,16 @@ async function handleNotifyAdminComplianceAlert(data: { practitioner_id: string;
   );
   if (admins.length === 0) return;
 
-  const subject = `Compliance Alert: Warning Issued to ${practitioner.first_name} ${practitioner.last_name}`;
+  const safeFirstName = escapeHtml(practitioner.first_name);
+  const safeLastName = escapeHtml(practitioner.last_name);
+  const safeEmail = escapeHtml(practitioner.email);
+  const safeReason = escapeHtml(data.reason);
+
+  const subject = `Compliance Alert: Warning Issued to ${safeFirstName} ${safeLastName}`;
   const bodyContent = `
-    <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">A formal warning has been issued to chiropractor <strong>${practitioner.first_name} ${practitioner.last_name}</strong> (${practitioner.email}).</p>
+    <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">A formal warning has been issued to chiropractor <strong>${safeFirstName} ${safeLastName}</strong> (${safeEmail}).</p>
     <div style="font-size: 14px; margin: 12px 0px; padding: 12px; background: #fdf2f2; border-left: 4px solid #f8b4b4; color: #9b1c1c; border-radius: 4px; font-family: 'Montserrat', sans-serif;">
-      <p style="margin: 0 0 6px 0;"><strong>Reason:</strong> ${data.reason}</p>
+      <p style="margin: 0 0 6px 0;"><strong>Reason:</strong> ${safeReason}</p>
       <p style="margin: 0;"><strong>Total Warning Count:</strong> ${data.warning_count}</p>
     </div>
     <p style="margin: 20px 0;"><a href="${env.APP_URL}/admin" style="background:#0068b9;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block;box-shadow:0 2px 4px rgba(0,104,185,0.2);font-family: 'Montserrat', sans-serif;">View Chiropractor Details</a></p>
@@ -400,10 +446,12 @@ async function handleRequestPractitionerInfo(data: { practitioner_id: string; me
   );
   if (!user) return;
 
+  const safeMessage = escapeHtml(data.message).replace(/\n/g, '<br>');
+
   const bodyContent = `
     <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">An administrator reviewed your application and needs additional information or documentation before approving your account:</p>
     <blockquote style="background:#f3f4f6;border-left:4px solid #0068b9;padding:12px 15px;margin:15px 0;font-style:italic;color:#374151;border-radius: 4px;font-family: 'Montserrat', sans-serif;">
-      ${data.message}
+      ${safeMessage}
     </blockquote>
     <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">Please log in to your dashboard and update your profile or documents accordingly.</p>
     <p style="margin: 20px 0;"><a href="${env.APP_URL}/dashboard" style="background:#0068b9;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block;box-shadow:0 2px 4px rgba(0,104,185,0.2);font-family: 'Montserrat', sans-serif;">Go to Dashboard</a></p>
@@ -432,9 +480,10 @@ async function handleUserAction(data: { user_id: string; action: string; changed
     `;
   } else if (data.action === 'SUSPENDED') {
     subject = 'Your Account Has Been Suspended — ChiroReferral';
+    const safeReason = data.reason ? escapeHtml(data.reason) : '';
     bodyContent = `
       <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">Your account has been suspended by an administrator.</p>
-      ${data.reason ? `<p style="font-size: 14px; margin: 12px 0px; color: #dc2626; font-family: 'Montserrat', sans-serif;"><strong>Reason:</strong> ${data.reason}</p>` : ''}
+      ${safeReason ? `<p style="font-size: 14px; margin: 12px 0px; color: #dc2626; font-family: 'Montserrat', sans-serif;"><strong>Reason:</strong> ${safeReason}</p>` : ''}
       <p style="font-size: 14px; margin: 12px 0px 0px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">If you believe this is an error, please contact support.</p>
     `;
   } else if (data.action === 'REACTIVATED') {
@@ -444,7 +493,7 @@ async function handleUserAction(data: { user_id: string; action: string; changed
     `;
   } else if (data.action === 'EDITED') {
     subject = 'Your Account Details Have Been Updated — ChiroReferral';
-    const fields = data.changed_fields?.join(', ') ?? 'details';
+    const fields = data.changed_fields ? data.changed_fields.map(f => escapeHtml(f)).join(', ') : 'details';
     bodyContent = `
       <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">The following fields of your account have been updated by an administrator: <strong>${fields}</strong>.</p>
     `;
@@ -460,32 +509,39 @@ async function handleUserAction(data: { user_id: string; action: string; changed
 }
 
 async function handleContactEnquiry(data: { name: string; email: string; phone?: string; message: string }) {
-  const phoneRow = data.phone
-    ? `<tr><td style="padding:6px 0;font-weight:600;color:#1f244a;width:80px;">Phone:</td><td style="padding:6px 0;">${data.phone}</td></tr>`
+  const safeName = escapeHtml(data.name);
+  const safeEmail = escapeHtml(data.email);
+  const safePhone = data.phone ? escapeHtml(data.phone) : '';
+  const safeMessage = escapeHtml(data.message).replace(/\n/g, '<br>');
+
+  const phoneRow = safePhone
+    ? `<tr><td style="padding:6px 0;font-weight:600;color:#1f244a;width:80px;">Phone:</td><td style="padding:6px 0;">${safePhone}</td></tr>`
     : '';
 
   const bodyContent = `
     <p style="font-size:14px;margin:0px 0px 16px 0px;color:#374151;font-family:'Montserrat',sans-serif;">A new enquiry has been submitted via the ChiroReferral chiropractor panel.</p>
     <table style="width:100%;border-collapse:collapse;font-size:14px;font-family:'Montserrat',sans-serif;">
-      <tr><td style="padding:6px 0;font-weight:600;color:#1f244a;width:80px;">Name:</td><td style="padding:6px 0;">${data.name}</td></tr>
-      <tr><td style="padding:6px 0;font-weight:600;color:#1f244a;">Email:</td><td style="padding:6px 0;">${data.email}</td></tr>
+      <tr><td style="padding:6px 0;font-weight:600;color:#1f244a;width:80px;">Name:</td><td style="padding:6px 0;">${safeName}</td></tr>
+      <tr><td style="padding:6px 0;font-weight:600;color:#1f244a;">Email:</td><td style="padding:6px 0;">${safeEmail}</td></tr>
       ${phoneRow}
       <tr><td colspan="2" style="padding:12px 0 4px 0;font-weight:600;color:#1f244a;">Message:</td></tr>
-      <tr><td colspan="2" style="padding:4px 0;color:#374151;">${data.message.replace(/\n/g, '<br>')}</td></tr>
+      <tr><td colspan="2" style="padding:4px 0;color:#374151;">${safeMessage}</td></tr>
     </table>
   `;
 
   await sendEmail(
     'Rev@welladjusted.co',
-    `New Enquiry from ${data.name} — ChiroReferral`,
+    `New Enquiry from ${safeName} — ChiroReferral`,
     wrapEmailTemplate(null, bodyContent),
   );
 }
 
 async function handlePatientReferralThankYou(data: { email: string; first_name: string; referral_number: string }) {
+  const safeRefNumber = escapeHtml(data.referral_number);
+
   const bodyContent = `
     <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">Thank you for submitting your referral request to ChiroReferral. We have received your request, and our matching system is searching for the best chiropractor to meet your needs.</p>
-    <p style="font-size: 14px; margin: 12px 0px; color: #1f244a; padding: 12px; background: #f3f4f6; border-radius: 6px; font-family: 'Montserrat', sans-serif;"><strong>Referral Reference Number:</strong> ${data.referral_number}</p>
+    <p style="font-size: 14px; margin: 12px 0px; color: #1f244a; padding: 12px; background: #f3f4f6; border-radius: 6px; font-family: 'Montserrat', sans-serif;"><strong>Referral Reference Number:</strong> ${safeRefNumber}</p>
     <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">A matching practitioner will review your case details and contact you to schedule an appointment. You can use your reference number if you need to contact support or track your request.</p>
   `;
 
@@ -529,8 +585,10 @@ async function handleSubscriptionActivated(data: {
   plan_name: string;
   included_tokens: number;
 }) {
+  const safePlanName = escapeHtml(data.plan_name);
+
   const bodyContent = `
-    <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">Your subscription to the <strong>${data.plan_name}</strong> plan is now active!</p>
+    <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">Your subscription to the <strong>${safePlanName}</strong> plan is now active!</p>
     <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">We have allocated <strong>${data.included_tokens} tokens</strong> to your account, which you can use to claim referrals immediately.</p>
     <p style="margin: 20px 0;"><a href="${env.APP_URL}/dashboard" style="background:#0068b9;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block;box-shadow:0 2px 4px rgba(0,104,185,0.2);font-family: 'Montserrat', sans-serif;">Go to Dashboard</a></p>
   `;
@@ -547,8 +605,10 @@ async function handleSubscriptionCancelled(data: {
   first_name: string;
   plan_name: string;
 }) {
+  const safePlanName = escapeHtml(data.plan_name);
+
   const bodyContent = `
-    <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">We have received your request to cancel your subscription to the <strong>${data.plan_name}</strong> plan.</p>
+    <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">We have received your request to cancel your subscription to the <strong>${safePlanName}</strong> plan.</p>
     <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">Your subscription will remain active with access to matching referrals until the end of your current billing period.</p>
   `;
 
@@ -569,13 +629,15 @@ async function handleTokenTransaction(data: {
 }) {
   const amountSign = data.amount >= 0 ? `+${data.amount}` : `${data.amount}`;
   const typeFormatted = data.transaction_type.replace('_', ' ');
+  const safeType = escapeHtml(typeFormatted);
+  const safeNotes = escapeHtml(data.notes);
 
   const bodyContent = `
     <p style="font-size: 14px; margin: 0px 0px 12px 0px; color: #374151; font-family: 'Montserrat', sans-serif;">A new transaction has been posted to your ChiroReferral token wallet:</p>
     <table style="width:100%; border-collapse:collapse; font-size:14px; font-family:'Montserrat',sans-serif; margin: 20px 0; background: #f3f4f6; border-radius: 6px; overflow: hidden;">
       <tr>
         <td style="padding:12px; font-weight:600; color:#1f244a; border-bottom: 1px solid #e5e7eb; width: 140px;">Transaction Type:</td>
-        <td style="padding:12px; border-bottom: 1px solid #e5e7eb; text-transform: capitalize;">${typeFormatted}</td>
+        <td style="padding:12px; border-bottom: 1px solid #e5e7eb; text-transform: capitalize;">${safeType}</td>
       </tr>
       <tr>
         <td style="padding:12px; font-weight:600; color:#1f244a; border-bottom: 1px solid #e5e7eb;">Amount:</td>
@@ -587,7 +649,7 @@ async function handleTokenTransaction(data: {
       </tr>
       <tr>
         <td style="padding:12px; font-weight:600; color:#1f244a;">Details:</td>
-        <td style="padding:12px;">${data.notes}</td>
+        <td style="padding:12px;">${safeNotes}</td>
       </tr>
     </table>
   `;
@@ -646,7 +708,7 @@ export async function executeEmailJob(name: string, data: any): Promise<void> {
       await handleRequestPractitionerInfo(data as { practitioner_id: string; message: string });
       break;
     case 'send-user-action':
-      await handleUserAction(data as { user_id: string; action: string; changed_fields?: string[] });
+      await handleUserAction(data as { user_id: string; action: string; changed_fields?: string[]; reason?: string });
       break;
     case 'send-contact-enquiry':
       await handleContactEnquiry(data as { name: string; email: string; phone?: string; message: string });

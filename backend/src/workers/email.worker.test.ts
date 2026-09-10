@@ -9,10 +9,10 @@ jest.mock('../config/env', () => ({
     SMTP_SECURE: false,
     SMTP_USER: 'user',
     SMTP_PASS: 'pass',
-    SMTP_FROM_EMAIL: 'no-reply@chiroreferral.com',
+    SMTP_FROM_EMAIL: 'no-reply@vitalitygroup.com.au',
     SMTP_FROM_NAME: 'ChiroReferral',
     SENDGRID_API_KEY: 'SG.mock',
-    SENDGRID_FROM_EMAIL: 'no-reply@chiroreferral.com',
+    SENDGRID_FROM_EMAIL: 'no-reply@vitalitygroup.com.au',
     SENDGRID_FROM_NAME: 'ChiroReferral',
     APP_URL: 'http://localhost:3000',
   },
@@ -30,9 +30,11 @@ jest.mock('nodemailer', () => ({
   }),
 }));
 
+const mockQuery = jest.fn();
+const mockQueryOne = jest.fn();
 jest.mock('../config/database', () => ({
-  query: jest.fn(),
-  queryOne: jest.fn(),
+  query: (...args: any[]) => mockQuery(...args),
+  queryOne: (...args: any[]) => mockQueryOne(...args),
 }));
 
 jest.mock('../config/redis', () => ({
@@ -40,10 +42,84 @@ jest.mock('../config/redis', () => ({
 }));
 
 import { executeEmailJob } from './email.worker';
+import { escapeHtml } from '../utils/html';
 
 describe('email.worker', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('HTML Escaping Utility', () => {
+    it('should correctly escape special HTML characters', () => {
+      expect(escapeHtml('<script>alert("xss")</script>')).toBe('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
+      expect(escapeHtml("Jane & John's <App>")).toBe('Jane &amp; John&#39;s &lt;App&gt;');
+      expect(escapeHtml(null)).toBe('');
+      expect(escapeHtml(undefined)).toBe('');
+    });
+  });
+
+  describe('Outbound Email HTML Escaping Remediation', () => {
+    it('should escape user-controlled values in contact enquiry email', async () => {
+      const jobData = {
+        name: 'John <script>alert(1)</script>',
+        email: 'john@example.com',
+        phone: '123-456-7890',
+        message: 'Hello <img src=x onerror=alert(2)> World',
+      };
+
+      await executeEmailJob('send-contact-enquiry', jobData);
+
+      expect(mockSendMail).toHaveBeenCalledTimes(1);
+      const mailOptions = mockSendMail.mock.calls[0][0];
+
+      expect(mailOptions.html).not.toContain('<script>');
+      expect(mailOptions.html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+      expect(mailOptions.html).not.toContain('<img src=x');
+      expect(mailOptions.html).toContain('&lt;img src=x onerror=alert(2)&gt;');
+    });
+
+    it('should escape user-controlled values in practitioner compliance alert', async () => {
+      mockQueryOne.mockResolvedValueOnce({
+        first_name: 'Evil<script>',
+        last_name: 'Practitioner',
+        email: 'evil@example.com',
+      });
+      mockQuery.mockResolvedValueOnce([{ email: 'admin@vitalitygroup.com.au' }]);
+
+      await executeEmailJob('notify-admin-compliance-alert', {
+        practitioner_id: 'p1',
+        reason: 'Violated TOS <iframe src="javascript:alert(1)">',
+        warning_count: 2,
+      });
+
+      expect(mockSendMail).toHaveBeenCalledTimes(1);
+      const mailOptions = mockSendMail.mock.calls[0][0];
+
+      expect(mailOptions.html).not.toContain('<script>');
+      expect(mailOptions.html).toContain('Evil&lt;script&gt;');
+      expect(mailOptions.html).not.toContain('<iframe');
+      expect(mailOptions.html).toContain('&lt;iframe src=&quot;javascript:alert(1)&quot;&gt;');
+    });
+
+    it('should escape user-controlled values in request practitioner info email', async () => {
+      mockQueryOne.mockResolvedValueOnce({
+        email: 'chiro@example.com',
+        first_name: 'Dr. <script>alert("name")</script>',
+      });
+
+      await executeEmailJob('request-practitioner-info', {
+        practitioner_id: 'p1',
+        message: 'Please re-upload license <svg/onload=alert(1)>',
+      });
+
+      expect(mockSendMail).toHaveBeenCalledTimes(1);
+      const mailOptions = mockSendMail.mock.calls[0][0];
+
+      expect(mailOptions.html).not.toContain('<script>');
+      expect(mailOptions.html).toContain('Dr. &lt;script&gt;');
+      expect(mailOptions.html).not.toContain('<svg');
+      expect(mailOptions.html).toContain('&lt;svg/onload=alert(1)&gt;');
+    });
   });
 
   it('should send thank you email to patient after filling referral form', async () => {
@@ -60,7 +136,7 @@ describe('email.worker', () => {
 
     expect(mailOptions.to).toBe('patient@example.com');
     expect(mailOptions.subject).toBe('Referral Request Received — ChiroReferral');
-    expect(mailOptions.from).toBe('"ChiroReferral" <no-reply@chiroreferral.com>');
+    expect(mailOptions.from).toBe('"ChiroReferral" <no-reply@vitalitygroup.com.au>');
     expect(mailOptions.html).toContain('REF-2026-000001');
     expect(mailOptions.html).toContain('Hi Jane,');
     expect(mailOptions.html).toContain('Thank you for submitting your referral request to ChiroReferral');
@@ -79,7 +155,7 @@ describe('email.worker', () => {
 
     expect(mailOptions.to).toBe('chiro@example.com');
     expect(mailOptions.subject).toBe('Welcome to ChiroReferral — Complete Your Profile');
-    expect(mailOptions.from).toBe('"ChiroReferral" <no-reply@chiroreferral.com>');
+    expect(mailOptions.from).toBe('"ChiroReferral" <no-reply@vitalitygroup.com.au>');
     expect(mailOptions.html).toContain('Hi Dr. John,');
     expect(mailOptions.html).toContain('Thank you for registering with ChiroReferral!');
     expect(mailOptions.html).toContain('/dashboard');
@@ -98,7 +174,7 @@ describe('email.worker', () => {
 
     expect(mailOptions.to).toBe('user@example.com');
     expect(mailOptions.subject).toBe('Your Password Has Been Reset — ChiroReferral');
-    expect(mailOptions.from).toBe('"ChiroReferral" <no-reply@chiroreferral.com>');
+    expect(mailOptions.from).toBe('"ChiroReferral" <no-reply@vitalitygroup.com.au>');
     expect(mailOptions.html).toContain('Hi Alice,');
     expect(mailOptions.html).toContain('This email confirms that the password for your ChiroReferral account was recently changed.');
   });

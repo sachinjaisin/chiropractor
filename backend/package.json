@@ -7,7 +7,7 @@
     "build": "tsc --project tsconfig.json",
     "start": "node dist/server.js",
     "start:worker": "node dist/worker.js",
-    "dev": "tsx watch src/server.ts",
+    "dev": "npm run migrate && tsx watch src/server.ts",
     "dev:worker": "tsx watch src/worker.ts",
     "migrate": "tsx src/migrate.ts",
     "migrate:rollback": "tsx src/migrate.ts rollback",
