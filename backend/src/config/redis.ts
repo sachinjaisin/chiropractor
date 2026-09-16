@@ -3,7 +3,11 @@ import { logger } from './logger';
 
 // ─── Toggle ──────────────────────────────────────────────────────────────────
 // Set to false and restart when Redis is running.
-export const REDIS_DISABLED = true;
+const isVercel = Boolean(process.env['VERCEL']);
+const rawUrl = process.env.REDIS_URL || process.env.REDIS_QUEUE_URL || '';
+const isLocalHost = !rawUrl || rawUrl.includes('localhost') || rawUrl.includes('127.0.0.1');
+
+export const REDIS_DISABLED = process.env.REDIS_DISABLED === 'true' || isVercel || isLocalHost;
 
 // ─── No-op client ─────────────────────────────────────────────────────────────
 // All methods are silent no-ops so every existing try/catch keeps working.
@@ -39,9 +43,10 @@ function createClient(url: string, name: string) {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const Redis = require('ioredis');
   const client = new Redis(url, {
-    maxRetriesPerRequest: 3,
-    enableReadyCheck: true,
-    lazyConnect: false,
+    maxRetriesPerRequest: null,
+    enableOfflineQueue: false,
+    enableReadyCheck: false,
+    lazyConnect: true,
     retryStrategy: (times: number) => Math.min(times * 100, 3000),
     reconnectOnError: (err: Error) => {
       logger.warn({ err, name }, 'Redis reconnecting after error');
@@ -77,10 +82,12 @@ export function getQueueRedisOptions() {
   const raw = env.REDIS_QUEUE_URL ?? env.REDIS_URL;
   const url = new URL(raw);
   return {
-    host:     url.hostname,
-    port:     parseInt(url.port || '6379', 10),
-    password: url.password ? decodeURIComponent(url.password) : undefined,
-    db:       parseInt(url.pathname.slice(1) || '0', 10),
+    host:                 url.hostname,
+    port:                 parseInt(url.port || '6379', 10),
+    password:             url.password ? decodeURIComponent(url.password) : undefined,
+    db:                   parseInt(url.pathname.slice(1) || '0', 10),
+    maxRetriesPerRequest: null,
+    enableOfflineQueue:   false,
   };
 }
 
