@@ -1,5 +1,5 @@
 import { Worker, Job } from 'bullmq';
-import { getQueueRedisOptions } from '../config/redis';
+import { getQueueRedisOptions, REDIS_DISABLED } from '../config/redis';
 import { query, queryOne } from '../config/database';
 import { env } from '../config/env';
 import { logger } from '../config/logger';
@@ -93,6 +93,10 @@ export async function executeGeocodingJob(name: string, data: any): Promise<void
 }
 
 export function startGeocodingWorker() {
+  if (REDIS_DISABLED) {
+    logger.info('Redis disabled — skipping geocoding worker instantiation');
+    return null;
+  }
   const worker = new Worker<GeoJobData>('geocoding', async (job: Job<GeoJobData>) => {
     await executeGeocodingJob(job.name, job.data);
   }, {

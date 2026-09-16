@@ -1,5 +1,5 @@
 import { Worker, Job } from 'bullmq';
-import { getQueueRedisOptions } from '../config/redis';
+import { getQueueRedisOptions, REDIS_DISABLED } from '../config/redis';
 import { query, queryOne } from '../config/database';
 import { logger } from '../config/logger';
 import { WalletService } from '../services/wallet.service';
@@ -143,6 +143,10 @@ export async function executeScoreJob(name: string, data: any): Promise<void> {
 }
 
 export function startScoreWorker() {
+  if (REDIS_DISABLED) {
+    logger.info('Redis disabled — skipping score worker instantiation');
+    return null;
+  }
   const worker = new Worker<ScoreJobData>('score-compute', async (job: Job<ScoreJobData>) => {
     await executeScoreJob(job.name, job.data);
   }, {

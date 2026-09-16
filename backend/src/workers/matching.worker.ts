@@ -511,6 +511,10 @@ export async function executeMatchingJob(name: string, data: any): Promise<void>
 }
 
 export function startMatchingWorker() {
+  if (REDIS_DISABLED) {
+    logger.info('Redis disabled — skipping matching worker instantiation');
+    return null;
+  }
   const worker = new Worker<MatchJobData>('referral-match', async (job: Job<MatchJobData>) => {
     logger.debug({ job: job.name, jobId: job.id }, 'Processing matching job');
     await executeMatchingJob(job.name, job.data);

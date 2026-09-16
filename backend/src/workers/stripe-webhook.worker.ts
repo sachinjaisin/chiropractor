@@ -1,7 +1,7 @@
 import { Worker, Job } from 'bullmq';
 import Stripe from 'stripe';
 import { env } from '../config/env';
-import { getQueueRedisOptions } from '../config/redis';
+import { getQueueRedisOptions, REDIS_DISABLED } from '../config/redis';
 import { queryOne } from '../config/database';
 import { logger } from '../config/logger';
 import { WalletService } from '../services/wallet.service';
@@ -196,6 +196,10 @@ export async function executeStripeWebhookJob(name: string, data: any): Promise<
 }
 
 export function startStripeWebhookWorker() {
+  if (REDIS_DISABLED) {
+    logger.info('Redis disabled — skipping stripe webhook worker instantiation');
+    return null;
+  }
   const worker = new Worker<StripeWebhookJobData>('stripe-webhook', async (job: Job<StripeWebhookJobData>) => {
     await executeStripeWebhookJob(job.name, job.data);
   }, {

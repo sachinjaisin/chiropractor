@@ -41,7 +41,7 @@ async function main() {
 
   const shutdown = async (signal: string) => {
     logger.info({ signal }, 'Worker shutting down');
-    await Promise.all(workers.map(w => w.close()));
+    await Promise.all(workers.filter((w): w is NonNullable<typeof w> => w !== null).map(w => w.close()));
     await closePool();
     await closeRedis();
     process.exit(0);
