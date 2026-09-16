@@ -100,6 +100,9 @@ async function runMigrations(pool: Pool, direction: 'up' | 'rollback'): Promise<
 async function main() {
   const direction = process.argv[2] === 'rollback' ? 'rollback' : 'up';
   const pool = new Pool({ connectionString: env.DATABASE_URL });
+  pool.on('connect', (client) => {
+    client.query('SET search_path TO public, neon_auth').catch(() => {});
+  });
 
   try {
     await runMigrations(pool, direction);

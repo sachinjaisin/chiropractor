@@ -19,8 +19,11 @@ export function getPool(): Pool {
       logger.error({ err }, 'Unexpected DB pool error');
     });
 
-    pool.on('connect', () => {
+    pool.on('connect', (client) => {
       logger.debug('New DB connection established');
+      client.query('SET search_path TO public, neon_auth').catch((err) => {
+        logger.error({ err }, 'Failed to set search_path on DB client');
+      });
     });
   }
   return pool;
